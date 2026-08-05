@@ -1,0 +1,193 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // === helpers ===
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin(tenantId) {
+      return isSignedIn() && (
+        isMaster() ||
+        exists(/databases/$(database)/documents/tenants/$(tenantId)/admins/$(request.auth.uid)) ||
+        get(/databases/$(database)/documents/tenants/$(tenantId)).data.adminEmail == request.auth.token.email
+      );
+    }
+
+    function isMaster() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'master';
+    }
+
+    // Admin (checado via isAdmin, que já resolve por tenant) OU vínculo
+    // registrado em users/{uid} apontando para este tenant especificamente.
+    // Isso é o que impede um usuário autenticado do Tenant A de ler/escrever
+    // dados do Tenant B.
+    function isTenantMember(tenantId) {
+      return isAdmin(tenantId) || (
+        isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // === Validations ===
+    function isValidCliente(data) {
+      return data.nome is string && data.nome.size() > 0 && data.nome.size() < 256
+             && (data.cpfCnpj == null || (data.cpfCnpj is string && data.cpfCnpj.size() < 20))
+             && data.criadoEm is string; // Validated as string representation for simplicity in rules
+    }
+
+    function isValidEmprestimo(data) {
+      return data.clienteId is string && isValidId(data.clienteId)
+             && data.valorPrincipal is number && data.valorPrincipal >= 0
+             && data.status is string
+             && data.criadoEm is string;
+    }
+
+    function isValidRecebimento(data) {
+      return data.emprestimoId is string && isValidId(data.emprestimoId)
+             && data.valor is number && data.valor > 0
+             && data.tipo in ['regular', 'quitacao', 'somente_juros', 'multa']
+             && data.criadoEm is string;
+    }
+
+    function isValidPagamentoCobrador(data) {
+      return data.cobradorId is string && isValidId(data.cobradorId)
+             && data.valor is number && data.valor != 0
+             && data.periodo is string
+             && data.criadoEm is string;
+    }
+
+    function isValidTenant(data) {
+      return data.nome is string && data.nome.size() > 0 && data.nome.size() < 256
+             && (data.adminEmail == null || (data.adminEmail is string && data.adminEmail.size() > 0))
+             && data.plano in ['Básico', 'Pro', 'Enterprise']
+             && data.status in ['ativo', 'congelado', 'suspenso']
+             && data.vencimento is string;
+    }
+
+    // === Default Deny ===
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // === Global Users Mapping ===
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isMaster());
+
+      // Um cobrador pode criar (uma única vez) o próprio mapeamento
+      // email -> tenant -> role, mas só se existir de fato um documento de
+      // cobrador, naquele tenant, cujo email bate com o do token autenticado.
+      // Isso permite o auto-cadastro necessário para o login via Google sem
+      // abrir brecha de auto-escalonamento: role fica travado em 'cobrador' e
+      // o tenantId não pode ser inventado, pois é validado contra um
+      // documento real.
+      allow create: if isSignedIn() && request.auth.uid == userId
+                    && incoming().keys().hasOnly(['email', 'tenantId', 'role', 'cobradorId'])
+                    && incoming().role == 'cobrador'
+                    && incoming().email == request.auth.token.email
+                    && incoming().tenantId is string
+                    && incoming().cobradorId is string
+                    && get(/databases/$(database)/documents/tenants/$(incoming().tenantId)/cobradores/$(incoming().cobradorId)).data.email == request.auth.token.email;
+
+      // Master pode criar/editar/remover qualquer mapeamento (bootstrap de
+      // master e de admins, correções manuais, etc.)
+      allow create, update, delete: if isMaster();
+    }
+
+    // Lookup pontual de cobrador por username/email durante o login (antes de
+    // sabermos o tenantId). Restrito a exatamente 1 resultado por consulta
+    // (request.query.limit == 1) para impedir dump em massa de toda a
+    // coleção via collectionGroup — o código cliente precisa usar .limit(1).
+    match /{path=**}/cobradores/{cobradorId} {
+      allow read: if request.query.limit == 1;
+    }
+
+    // === Collections ===
+    match /tenants/{tenantId} {
+      allow list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow create: if isMaster() && isValidTenant(incoming());
+      allow update: if isMaster() && isValidTenant(incoming());
+      allow delete: if isMaster();
+
+      // Clients
+      match /clientes/{clienteId} {
+        allow read: if isTenantMember(tenantId);
+        allow create: if isTenantMember(tenantId) && isValidCliente(incoming())
+                      && incoming().keys().hasAll(['nome', 'criadoEm'])
+                      && incoming().keys().size() <= 10;
+        allow update: if isTenantMember(tenantId) && isValidCliente(incoming())
+                      && incoming().diff(existing()).affectedKeys().hasOnly(['nome', 'cpfCnpj', 'telefone', 'whatsapp', 'endereco']);
+        allow delete: if isAdmin(tenantId);
+      }
+
+      // Loans
+      match /emprestimos/{emprestimoId} {
+        allow read: if isTenantMember(tenantId);
+        allow create: if isTenantMember(tenantId) && isValidEmprestimo(incoming())
+                      && exists(/databases/$(database)/documents/tenants/$(tenantId)/clientes/$(incoming().clienteId));
+        allow update: if isTenantMember(tenantId) && (
+          // Admin can change status and balances
+          isAdmin(tenantId) ||
+          // Cobradores can update payment related fields via restricted logic
+          incoming().diff(existing()).affectedKeys().hasAny(['status', 'saldoDevedor', 'valorPrincipal', 'multaAcumulada', 'abatimentoJuros', 'dataVencimento'])
+        );
+        allow delete: if isAdmin(tenantId);
+      }
+
+      // Payments
+      match /recebimentos/{recebimentoId} {
+        allow read: if isTenantMember(tenantId);
+        allow create: if isTenantMember(tenantId) && isValidRecebimento(incoming())
+                      && exists(/databases/$(database)/documents/tenants/$(tenantId)/emprestimos/$(incoming().emprestimoId));
+        allow delete: if isAdmin(tenantId);
+      }
+
+      // Staff (Cobradores)
+      match /cobradores/{cobradorId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isAdmin(tenantId);
+      }
+
+      // Expenses
+      match /despesas/{despesaId} {
+        allow read: if isTenantMember(tenantId);
+        allow create: if isTenantMember(tenantId);
+        allow update, delete: if isAdmin(tenantId);
+      }
+
+      // Staff Payments
+      match /pagamentosCobradores/{pagamentoId} {
+        allow read: if isTenantMember(tenantId);
+        allow create: if isTenantMember(tenantId) && isValidPagamentoCobrador(incoming());
+        allow update, delete: if isAdmin(tenantId);
+      }
+
+      // Config
+      match /config/{configId} {
+        allow read: if isTenantMember(tenantId);
+        allow write: if isAdmin(tenantId);
+      }
+    }
+  }
+}

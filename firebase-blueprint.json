@@ -1,0 +1,181 @@
+{
+  "entities": {
+    "Cliente": {
+      "title": "Cliente",
+      "description": "Dados do cliente tomador de crédito",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string" },
+        "cpfCnpj": { "type": "string" },
+        "telefone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "endereco": {
+          "type": "object",
+          "properties": {
+            "rua": { "type": "string" },
+            "numero": { "type": "string" },
+            "bairro": { "type": "string" },
+            "cidade": { "type": "string" },
+            "cep": { "type": "string" }
+          }
+        },
+        "criadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome", "criadoEm"]
+    },
+    "Emprestimo": {
+      "title": "Empréstimo",
+      "description": "Dados do contrato de empréstimo",
+      "type": "object",
+      "properties": {
+        "clienteId": { "type": "string" },
+        "valorPrincipal": { "type": "number" },
+        "saldoDevedor": { "type": "number" },
+        "taxaJuros": { "type": "number" },
+        "frequencia": { "type": "string", "enum": ["diario", "semanal", "quinzenal", "mensal"] },
+        "carenciaDias": { "type": "integer" },
+        "dataVencimento": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" },
+        "multaAcumulada": { "type": "number" },
+        "abatimentoJuros": { "type": "number" },
+        "criadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clienteId", "valorPrincipal", "taxaJuros", "frequencia", "dataVencimento", "status", "criadoEm"]
+    },
+    "Recebimento": {
+      "title": "Recebimento",
+      "description": "Registro de pagamento recebido",
+      "type": "object",
+      "properties": {
+        "clienteId": { "type": "string" },
+        "emprestimoId": { "type": "string" },
+        "valor": { "type": "number" },
+        "tipo": { "type": "string", "enum": ["regular", "quitacao", "somente_juros", "multa"] },
+        "dataRecebimento": { "type": "string", "format": "date-time" },
+        "observacao": { "type": "string" },
+        "cobradorId": { "type": "string" },
+        "criadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clienteId", "emprestimoId", "valor", "tipo", "dataRecebimento", "criadoEm"]
+    },
+    "Cobrador": {
+      "title": "Cobrador",
+      "description": "Usuário da equipe de cobrança",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "telefone": { "type": "string" },
+        "ativo": { "type": "boolean" },
+        "criadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome", "email", "ativo", "criadoEm"]
+    },
+    "Despesa": {
+      "title": "Despesa",
+      "description": "Despesas operacionais ou de cobradores",
+      "type": "object",
+      "properties": {
+        "cobradorId": { "type": "string" },
+        "valor": { "type": "number" },
+        "descricao": { "type": "string" },
+        "data": { "type": "string", "format": "date-time" },
+        "categoria": { "type": "string" },
+        "criadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["valor", "descricao", "data", "criadoEm"]
+    },
+    "PagamentoCobrador": {
+      "title": "Pagamento de Cobrador",
+      "description": "Pagamentos realizados aos cobradores (comissões/salários)",
+      "type": "object",
+      "properties": {
+        "cobradorId": { "type": "string" },
+        "valor": { "type": "number" },
+        "data": { "type": "string", "format": "date-time" },
+        "observacao": { "type": "string" },
+        "criadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["cobradorId", "valor", "data", "criadoEm"]
+    },
+    "Config": {
+      "title": "Configuração",
+      "description": "Configurações da empresa/tenant",
+      "type": "object",
+      "properties": {
+        "nomeEmpresa": { "type": "string" },
+        "telefone": { "type": "string" },
+        "endereco": { "type": "string" },
+        "taxaPadrao": { "type": "number" },
+        "frequenciaPadrao": { "type": "string" },
+        "carenciaPadrao": { "type": "integer" },
+        "templateCobranca": { "type": "string" },
+        "templateRecibo": { "type": "string" },
+        "templateLembrete": { "type": "string" }
+      }
+    },
+    "Tenant": {
+      "title": "Tenant",
+      "description": "Dados da empresa assinante (Tenant)",
+      "type": "object",
+      "properties": {
+        "nome": { "type": "string" },
+        "adminEmail": { "type": "string" },
+        "plano": { "type": "string", "enum": ["Básico", "Pro", "Enterprise"] },
+        "status": { "type": "string", "enum": ["ativo", "congelado", "suspenso"] },
+        "vencimento": { "type": "string", "format": "date-time" },
+        "criadoEm": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nome", "adminEmail", "plano", "status", "vencimento", "criadoEm"]
+    },
+    "GlobalUser": {
+      "title": "Configuração Global de Usuário",
+      "description": "Mapeia email de usuário para seu tenant e permissão",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "tenantId": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["email", "tenantId", "role"]
+    }
+  },
+  "firestore": {
+    "users/{uid}": {
+      "schema": "GlobalUser",
+      "description": "Mapeamento global de permissões por UID"
+    },
+    "tenants/{tenantId}": {
+      "schema": "Tenant",
+      "description": "Dados mestre do tenant"
+    },
+    "tenants/{tenantId}/clientes/{clienteId}": {
+      "schema": "Cliente",
+      "description": "Coleção de clientes por tenant"
+    },
+    "tenants/{tenantId}/emprestimos/{emprestimoId}": {
+      "schema": "Emprestimo",
+      "description": "Coleção de empréstimos por tenant"
+    },
+    "tenants/{tenantId}/recebimentos/{recebimentoId}": {
+      "schema": "Recebimento",
+      "description": "Coleção de recebimentos por tenant"
+    },
+    "tenants/{tenantId}/cobradores/{cobradorId}": {
+      "schema": "Cobrador",
+      "description": "Coleção de cobradores por tenant"
+    },
+    "tenants/{tenantId}/despesas/{despesaId}": {
+      "schema": "Despesa",
+      "description": "Coleção de despesas por tenant"
+    },
+    "tenants/{tenantId}/pagamentosCobradores/{pagamentoId}": {
+      "schema": "PagamentoCobrador",
+      "description": "Coleção de pagamentos de cobradores por tenant"
+    },
+    "tenants/{tenantId}/config/global": {
+      "schema": "Config",
+      "description": "Configurações globais do tenant"
+    }
+  }
+}

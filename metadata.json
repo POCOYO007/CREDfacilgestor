@@ -1,0 +1,5 @@
+{
+  "name": "CredFácil - Gestão de Empréstimos",
+  "description": "Sistema completo para gestão de carteiras de crédito, microcrédito e factoring com suporte a múltiplos níveis de acesso e persistência local.",
+  "requestFramePermissions": []
+}

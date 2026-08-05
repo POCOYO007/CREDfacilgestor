@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-dark: var(--brand-primary-dark);
+  --color-brand-primary-light: var(--brand-primary-light);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-surface-2: var(--brand-surface-2);
+  --color-brand-accent: var(--brand-accent);
+  
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border-subtle: var(--border-subtle);
+}
+
+:root {
+  --brand-primary: #FF6B00;
+  --brand-primary-dark: #E05A00;
+  --brand-primary-light: #FFF0E6;
+  --brand-secondary: #1A1A2E;
+  --brand-surface: #16213E;
+  --brand-surface-2: #0F3460;
+  --brand-accent: #E94560;
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0AEC0;
+  --text-muted: #718096;
+  
+  --success: #48BB78;
+  --warning: #ECC94B;
+  --danger: #FC8181;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='light'] {
+  --brand-secondary: #F7FAFC;
+  --brand-surface: #FFFFFF;
+  --brand-surface-2: #EDF2F7;
+  
+  --text-primary: #1A202C;
+  --text-secondary: #4A5568;
+  --text-muted: #718096;
+  
+  --border-subtle: rgba(0, 0, 0, 0.08);
+}
+
+@layer base {
+  body {
+    @apply bg-brand-secondary text-text-primary font-sans antialiased transition-colors duration-300;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-brand-secondary;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-surface-2 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-primary;
+  }
+}
+
+@layer components {
+  .glass {
+    background: var(--brand-surface);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .bento-card {
+    background: var(--brand-surface);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-subtle);
+    @apply rounded-2xl p-6 transition-all duration-200 hover:border-brand-primary/30;
+  }
+
+  .btn-primary {
+    @apply bg-linear-to-r from-brand-primary to-[#FF8C42] text-white font-semibold py-2 px-4 rounded-xl shadow-lg hover:shadow-brand-primary/20 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .input-field {
+    @apply bg-brand-surface-2 border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-hidden focus:border-brand-primary transition-colors text-text-primary placeholder:text-text-muted;
+  }
+}
