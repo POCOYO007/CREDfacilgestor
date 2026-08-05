@@ -77,6 +77,13 @@ service cloud.firestore {
              && data.criadoEm is string;
     }
 
+    function isValidDespesa(data) {
+      return data.valor is number && data.valor > 0
+             && data.descricao is string && data.descricao.size() > 0 && data.descricao.size() < 500
+             && data.data is string
+             && data.criadoEm is string;
+    }
+
     function isValidTenant(data) {
       return data.nome is string && data.nome.size() > 0 && data.nome.size() < 256
              && (data.adminEmail == null || (data.adminEmail is string && data.adminEmail.size() > 0))
@@ -124,8 +131,14 @@ service cloud.firestore {
 
     // === Collections ===
     match /tenants/{tenantId} {
-      allow list: if isSignedIn();
-      allow get: if isSignedIn();
+      // list (consulta pelo adminEmail no login, antes de saber o tenantId):
+      // só master enxerga a coleção inteira; qualquer outro signed-in só
+      // pode rodar uma busca pontual (limit(1)), igual ao lookup de
+      // cobradores — evita que um admin/cobrador de um tenant liste
+      // adminEmail/plano/status de todos os outros tenants do SaaS.
+      allow list: if isMaster() || request.query.limit == 1;
+      // get (documento específico): master, ou quem já pertence a este tenant.
+      allow get: if isMaster() || isTenantMember(tenantId);
       allow create: if isMaster() && isValidTenant(incoming());
       allow update: if isMaster() && isValidTenant(incoming());
       allow delete: if isMaster();
@@ -147,10 +160,22 @@ service cloud.firestore {
         allow create: if isTenantMember(tenantId) && isValidEmprestimo(incoming())
                       && exists(/databases/$(database)/documents/tenants/$(tenantId)/clientes/$(incoming().clienteId));
         allow update: if isTenantMember(tenantId) && (
-          // Admin can change status and balances
+          // Admin can change anything (status, balances, cobradorId, etc.)
           isAdmin(tenantId) ||
-          // Cobradores can update payment related fields via restricted logic
-          incoming().diff(existing()).affectedKeys().hasAny(['status', 'saldoDevedor', 'valorPrincipal', 'multaAcumulada', 'abatimentoJuros', 'dataVencimento'])
+          // Cobradores só podem tocar nos campos de pagamento/cobrança, e os
+          // valores monetários resultantes não podem ficar negativos — evita
+          // que alguém zere/inflacione uma dívida escrevendo direto no
+          // documento em vez de passar pelo fluxo de recebimento.
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'status', 'saldoDevedor', 'valorPrincipal', 'multaAcumulada',
+              'abatimentoJuros', 'dataVencimento', 'parcelasPagas', 'valorParcela'
+            ])
+            && incoming().valorPrincipal is number && incoming().valorPrincipal >= 0
+            && incoming().saldoDevedor is number && incoming().saldoDevedor >= 0
+            && (incoming().multaAcumulada == null || (incoming().multaAcumulada is number && incoming().multaAcumulada >= 0))
+            && incoming().status is string
+          )
         );
         allow delete: if isAdmin(tenantId);
       }
@@ -172,7 +197,7 @@ service cloud.firestore {
       // Expenses
       match /despesas/{despesaId} {
         allow read: if isTenantMember(tenantId);
-        allow create: if isTenantMember(tenantId);
+        allow create: if isTenantMember(tenantId) && isValidDespesa(incoming());
         allow update, delete: if isAdmin(tenantId);
       }
 
