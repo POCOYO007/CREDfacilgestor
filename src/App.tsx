@@ -47,7 +47,8 @@ export default function App() {
               email: fbUser.email,
               role: data.role,
               tenantId: data.tenantId,
-              tenantNome: data.tenantNome
+              tenantNome: data.tenantNome,
+              cobradorId: data.cobradorId
             });
             setInitializing(false);
             return;
