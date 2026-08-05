@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Card, Button, Badge } from '../../components/ui';
 import { 
@@ -31,7 +31,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../components/ui';
 import { motion } from 'motion/react';
-import { useMemo } from 'react';
 
 export default function CobradorDashboard() {
   const { usuarioAtual, recebimentos, emprestimos, clientes, config, cobradores } = useAppStore();
@@ -91,10 +90,53 @@ export default function CobradorDashboard() {
     (isTodayDate(r.dataRecebimento) || isTodayDate(r.criadoEm))
   ), [recebimentos, emprestimos, cid, usuarioAtual]);
 
-  const totalColetadoHoje = meusRecebimentosHoje.reduce((s, r) => s + (parseFloat(r.valor) || 0), 0);
-  const multasColetadasHoje = meusRecebimentosHoje.filter(r => r.tipo === 'multa').reduce((s, r) => s + (parseFloat(r.valor) || 0), 0);
+  // Filtro de período (Hoje/Semana/Mês/Personalizado) pros ganhos exibidos no
+  // card de resumo — separado de meusRecebimentosHoje, que continua sendo
+  // usado pro progresso da rota (esse é sempre "hoje", não segue o filtro).
+  const [periodo, setPeriodo] = useState('hoje');
+  const [customInicio, setCustomInicio] = useState(new Date().toISOString().split('T')[0]);
+  const [customFim, setCustomFim] = useState(new Date().toISOString().split('T')[0]);
 
-  const comissaoHoje = totalColetadoHoje * (percentualComissao / 100);
+  const { inicio, fim } = useMemo(() => {
+    const ini = new Date();
+    const f = new Date();
+    f.setHours(23, 59, 59, 999);
+
+    if (periodo === 'hoje') {
+      ini.setHours(0, 0, 0, 0);
+    } else if (periodo === 'semana') {
+      ini.setDate(ini.getDate() - 7);
+      ini.setHours(0, 0, 0, 0);
+    } else if (periodo === 'mes') {
+      ini.setDate(1);
+      ini.setHours(0, 0, 0, 0);
+    } else if (periodo === 'personalizado') {
+      return {
+        inicio: new Date(customInicio + 'T00:00:00'),
+        fim: new Date(customFim + 'T23:59:59')
+      };
+    }
+    return { inicio: ini, fim: f };
+  }, [periodo, customInicio, customFim]);
+
+  const meusRecebimentosPeriodo = useMemo(() => recebimentos.filter(r => {
+    if (!isPertenceAoCobrador(r.cobradorId, r.emprestimoId)) return false;
+    const d = new Date(r.dataRecebimento || r.criadoEm);
+    return d >= inicio && d <= fim;
+  }).sort((a, b) => new Date(b.dataRecebimento || b.criadoEm) - new Date(a.dataRecebimento || a.criadoEm)),
+  [recebimentos, emprestimos, cid, usuarioAtual, inicio, fim]);
+
+  const totalColetadoPeriodo = meusRecebimentosPeriodo.reduce((s, r) => s + (parseFloat(r.valor) || 0), 0);
+  const multasColetadasPeriodo = meusRecebimentosPeriodo.filter(r => r.tipo === 'multa').reduce((s, r) => s + (parseFloat(r.valor) || 0), 0);
+
+  const comissaoPeriodo = totalColetadoPeriodo * (percentualComissao / 100);
+
+  const labelPeriodo = {
+    hoje: 'Hoje',
+    semana: 'Nesta Semana',
+    mes: 'Neste Mês',
+    personalizado: 'no Período'
+  }[periodo];
 
   const dataHojeObj = new Date();
   const meusRecebimentosMes = useMemo(() => recebimentos.filter(r => {
@@ -156,6 +198,49 @@ export default function CobradorDashboard() {
         </motion.div>
       </div>
 
+      {/* Filtro de Período dos Ganhos */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1">
+          {[
+            { id: 'hoje', label: 'Hoje' },
+            { id: 'semana', label: 'Semana' },
+            { id: 'mes', label: 'Mês' },
+            { id: 'personalizado', label: 'Data' },
+          ].map(p => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setPeriodo(p.id)}
+              className={cn(
+                "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap border shrink-0",
+                periodo === p.id
+                  ? "bg-brand-primary text-white border-brand-primary shadow-sm shadow-brand-primary/30"
+                  : "bg-brand-surface border-border-subtle text-text-muted hover:text-white"
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        {periodo === 'personalizado' && (
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={customInicio}
+              onChange={e => setCustomInicio(e.target.value)}
+              className="flex-1 bg-brand-surface-2 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-hidden focus:border-brand-primary"
+            />
+            <span className="text-text-muted text-[10px] shrink-0">até</span>
+            <input
+              type="date"
+              value={customFim}
+              onChange={e => setCustomFim(e.target.value)}
+              className="flex-1 bg-brand-surface-2 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-hidden focus:border-brand-primary"
+            />
+          </div>
+        )}
+      </div>
+
       {/* Card de Resumo do Dia */}
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
@@ -169,31 +254,35 @@ export default function CobradorDashboard() {
           <div className="relative z-10">
             <div className="flex justify-between items-center mb-6">
               <div className="flex flex-col">
-                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/50 mb-1">Total Coletado Hoje</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                  <span className="text-[10px] font-bold text-success capitalize">Tempo Real</span>
-                </div>
+                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/50 mb-1">Total Coletado {labelPeriodo}</p>
+                {periodo === 'hoje' ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                    <span className="text-[10px] font-bold text-success capitalize">Tempo Real</span>
+                  </div>
+                ) : (
+                  <span className="text-[10px] font-bold text-text-muted">{meusRecebimentosPeriodo.length} pagamento(s)</span>
+                )}
               </div>
               <Badge className="bg-white/5 border-white/10 text-white/80 backdrop-blur-md px-3 py-1 font-mono text-[10px]">META: R$ 500</Badge>
             </div>
-            
+
             <h3 className="text-3xl font-black font-mono tracking-tighter mb-4 bg-linear-to-b from-white to-white/70 bg-clip-text text-transparent">
-              {formatCurrency(totalColetadoHoje)}
+              {formatCurrency(totalColetadoPeriodo)}
             </h3>
 
-            {/* Bloco Destaque: Minha Comissão em Tempo Real */}
+            {/* Bloco Destaque: Minha Comissão */}
             <div className="mb-6 p-4 rounded-2xl bg-linear-to-r from-emerald-500/15 via-emerald-500/5 to-transparent border border-emerald-500/30 flex items-center justify-between shadow-xs">
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <Coins size={15} className="text-emerald-400 shrink-0" />
                   <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300">
-                    Minha Comissão Hoje ({percentualComissao}%)
+                    Minha Comissão {labelPeriodo} ({percentualComissao}%)
                   </span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
+                  {periodo === 'hoje' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />}
                 </div>
                 <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 tracking-tight">
-                  {formatCurrency(comissaoHoje)}
+                  {formatCurrency(comissaoPeriodo)}
                 </span>
               </div>
               <div className="text-right border-l border-white/10 pl-4 shrink-0">
@@ -201,15 +290,15 @@ export default function CobradorDashboard() {
                 <span className="text-xs sm:text-sm font-mono font-bold text-white/90">{formatCurrency(comissaoMes)}</span>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-8">
               <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5">
                 <span className="text-[8px] uppercase font-black text-white/40 tracking-[0.2em] block mb-1">Apenas Multas</span>
-                <span className="text-lg font-bold font-mono text-warning">{formatCurrency(multasColetadasHoje)}</span>
+                <span className="text-lg font-bold font-mono text-warning">{formatCurrency(multasColetadasPeriodo)}</span>
               </div>
               <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-right">
                 <span className="text-[8px] uppercase font-black text-white/40 tracking-[0.2em] block mb-1">Capital/Juros</span>
-                <span className="text-lg font-bold font-mono text-success">{formatCurrency(totalColetadoHoje - multasColetadasHoje)}</span>
+                <span className="text-lg font-bold font-mono text-success">{formatCurrency(totalColetadoPeriodo - multasColetadasPeriodo)}</span>
               </div>
             </div>
             
@@ -278,10 +367,10 @@ export default function CobradorDashboard() {
               <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
                 <Coins size={16} />
               </div>
-              <Badge variant="success" className="text-[8px] font-bold px-1.5 py-0.5">AO VIVO</Badge>
+              <Badge variant="success" className="text-[8px] font-bold px-1.5 py-0.5">{periodo === 'hoje' ? 'AO VIVO' : labelPeriodo.toUpperCase()}</Badge>
             </div>
             <div className="relative z-10">
-              <h4 className="text-base sm:text-2xl font-black font-mono text-emerald-400 tracking-tight truncate">{formatCurrency(comissaoHoje)}</h4>
+              <h4 className="text-base sm:text-2xl font-black font-mono text-emerald-400 tracking-tight truncate">{formatCurrency(comissaoPeriodo)}</h4>
               <p className="text-[9px] text-emerald-300 font-bold uppercase tracking-wider truncate">Comissão ({percentualComissao}%)</p>
             </div>
           </Card>
@@ -386,30 +475,33 @@ export default function CobradorDashboard() {
         </div>
       </div>
 
-      {/* Clientes Coletados Hoje */}
+      {/* Clientes Coletados no Período */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <h3 className="font-black text-sm uppercase tracking-widest text-text-secondary flex items-center gap-2">
             <span className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-            Clientes Coletados Hoje ({meusRecebimentosHoje.length})
+            Clientes Coletados {labelPeriodo} ({meusRecebimentosPeriodo.length})
           </h3>
-          {meusRecebimentosHoje.length > 0 && (
+          {meusRecebimentosPeriodo.length > 0 && (
             <Badge variant="success" className="text-[10px] font-mono font-black">
-              Total: {formatCurrency(totalColetadoHoje)}
+              Total: {formatCurrency(totalColetadoPeriodo)}
             </Badge>
           )}
         </div>
-        
+
         <div className="space-y-2.5">
-          {meusRecebimentosHoje.map((r, idx) => {
+          {meusRecebimentosPeriodo.map((r, idx) => {
             let cliente = clientes.find(c => c.id === r.clienteId);
             if (!cliente && r.emprestimoId) {
               const emp = emprestimos.find(e => e.id === r.emprestimoId);
               if (emp) cliente = clientes.find(c => c.id === emp.clienteId);
             }
             const nomeCliente = cliente?.nome || r.clienteNome || 'Cliente Não Identificado';
-            const hora = new Date(r.dataRecebimento || r.criadoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            
+            const dataRec = new Date(r.dataRecebimento || r.criadoEm);
+            const hora = periodo === 'hoje'
+              ? dataRec.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+              : dataRec.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + dataRec.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
             return (
               <motion.div 
                 key={r.id}
@@ -441,10 +533,10 @@ export default function CobradorDashboard() {
               </motion.div>
             );
           })}
-          {meusRecebimentosHoje.length === 0 && (
+          {meusRecebimentosPeriodo.length === 0 && (
             <div className="py-10 flex flex-col items-center justify-center text-text-muted/40 bg-brand-surface/30 rounded-3xl border border-dashed border-border-subtle">
               <HandCoins size={36} className="mb-2 text-text-muted/40" />
-              <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Nenhuma coleta realizada hoje</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-text-muted">Nenhuma coleta {labelPeriodo.toLowerCase()}</p>
               <p className="text-[10px] text-text-muted/60 mt-0.5">Os recebimentos baixados na rota aparecerão aqui.</p>
             </div>
           )}
