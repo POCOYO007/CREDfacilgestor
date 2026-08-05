@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Button, Input, Card, Badge, Modal } from '../../components/ui';
 import { formatCurrency, formatCPF, formatPhone, formatDate } from '../../utils/formatters';
@@ -93,10 +93,10 @@ export default function ClientesCobrador() {
   }, [isLoanModalOpen, config, loggedInCobradorId, cobradores]);
 
   // Search filter
-  const filteredClientes = clientes.filter(c => 
-    c.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredClientes = useMemo(() => clientes.filter(c =>
+    c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.cpfCnpj.includes(searchTerm)
-  );
+  ), [clientes, searchTerm]);
 
   const toggleExpandClient = (id) => {
     setExpandedClientId(expandedClientId === id ? null : id);

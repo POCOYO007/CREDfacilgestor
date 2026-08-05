@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
 import { Button, Card, Badge, Input, cn } from '../../components/ui';
@@ -78,8 +78,6 @@ export default function AcertoCobrador() {
     };
   };
 
-  if (!cobrador) return <div>Cobrador não encontrado.</div>;
-
   const getPeriodoDates = () => {
     const inicio = new Date();
     const fim = new Date();
@@ -121,50 +119,56 @@ export default function AcertoCobrador() {
            (emailPrefix && matchId === emailPrefix);
   };
 
-  const recs = recebimentos.filter(r => 
-    isPertenceAoCobrador(r.cobradorId) && 
-    parseToLocalDate(r.dataRecebimento) >= inicio && 
+  const recs = useMemo(() => recebimentos.filter(r =>
+    isPertenceAoCobrador(r.cobradorId) &&
+    parseToLocalDate(r.dataRecebimento) >= inicio &&
     parseToLocalDate(r.dataRecebimento) <= fim
-  );
+  ), [recebimentos, cobrador, id, inicio, fim]);
 
   // Mostra as despesas do período OU qualquer despesa PENDENTE (aprovada === null ou undefined) para que o admin possa aprovar/rejeitar
-  const desps = despesas.filter(d => 
+  const desps = useMemo(() => despesas.filter(d =>
     isPertenceAoCobrador(d.cobradorId) && (
       (parseToLocalDate(d.data) >= inicio && parseToLocalDate(d.data) <= fim) ||
       d.aprovada === undefined || d.aprovada === null
     )
-  );
+  ), [despesas, cobrador, id, inicio, fim]);
 
-  const todosRecsCobrador = recebimentos.filter(r => isPertenceAoCobrador(r.cobradorId));
-  const recsForaDoFiltro = todosRecsCobrador.filter(r => {
+  const todosRecsCobrador = useMemo(
+    () => recebimentos.filter(r => isPertenceAoCobrador(r.cobradorId)),
+    [recebimentos, cobrador, id]
+  );
+  const recsForaDoFiltro = useMemo(() => todosRecsCobrador.filter(r => {
     const data = parseToLocalDate(r.dataRecebimento);
     return data < inicio || data > fim;
-  });
+  }), [todosRecsCobrador, inicio, fim]);
 
-  const todasDespsCobrador = despesas.filter(d => isPertenceAoCobrador(d.cobradorId));
-  const despsForaDoFiltro = todasDespsCobrador.filter(d => {
+  const todasDespsCobrador = useMemo(
+    () => despesas.filter(d => isPertenceAoCobrador(d.cobradorId)),
+    [despesas, cobrador, id]
+  );
+  const despsForaDoFiltro = useMemo(() => todasDespsCobrador.filter(d => {
     const data = parseToLocalDate(d.data);
     // Para contar como fora do filtro, não pode estar pendente (pois pendentes são exibidas no painel sempre) e a data precisa estar de fora
     return d.aprovada !== undefined && d.aprovada !== null && (data < inicio || data > fim);
-  });
+  }), [todasDespsCobrador, inicio, fim]);
 
   const totalColetado = recs.reduce((s, r) => s + (parseFloat(r.valor) || 0), 0);
   const multasColetadas = recs.filter(r => r.tipo === 'multa').reduce((s, r) => s + (parseFloat(r.valor) || 0), 0);
-  
-  // O valor total de despesas aprovadas deduzido no acerto deve conter apenas as despesas APROVADAS do PERÍODO selecionado
-  const totalDespesas = todasDespsCobrador.filter(d => 
-    d.aprovada && 
-    parseToLocalDate(d.data) >= inicio && 
-    parseToLocalDate(d.data) <= fim
-  ).reduce((s, d) => s + (parseFloat(d.valor) || 0), 0);
 
-  const comissaoValor = totalColetado * ((parseFloat(cobrador.comissao) || 0) / 100);
-  
-  const pagamentosEfetuados = pagamentosCobradores.filter(p => 
-    isPertenceAoCobrador(p.cobradorId) && 
-    parseToLocalDate(p.criadoEm) >= inicio && 
+  // O valor total de despesas aprovadas deduzido no acerto deve conter apenas as despesas APROVADAS do PERÍODO selecionado
+  const totalDespesas = useMemo(() => todasDespsCobrador.filter(d =>
+    d.aprovada &&
+    parseToLocalDate(d.data) >= inicio &&
+    parseToLocalDate(d.data) <= fim
+  ).reduce((s, d) => s + (parseFloat(d.valor) || 0), 0), [todasDespsCobrador, inicio, fim]);
+
+  const comissaoValor = totalColetado * ((parseFloat(cobrador?.comissao) || 0) / 100);
+
+  const pagamentosEfetuados = useMemo(() => pagamentosCobradores.filter(p =>
+    isPertenceAoCobrador(p.cobradorId) &&
+    parseToLocalDate(p.criadoEm) >= inicio &&
     parseToLocalDate(p.criadoEm) <= fim
-  ).reduce((s, p) => s + (parseFloat(p.valor) || 0), 0);
+  ).reduce((s, p) => s + (parseFloat(p.valor) || 0), 0), [pagamentosCobradores, cobrador, id, inicio, fim]);
 
   const aEntregar = (totalColetado - comissaoValor - totalDespesas) + pagamentosEfetuados;
 
@@ -176,6 +180,10 @@ export default function AcertoCobrador() {
       toast.error('Erro ao editar despesa');
     }
   };
+
+  // Precisa vir depois de todos os hooks acima (useMemo) — um return
+  // condicional antes deles quebraria a ordem dos hooks entre renders.
+  if (!cobrador) return <div>Cobrador não encontrado.</div>;
 
   return (
     <div className="space-y-6 sm:space-y-8">

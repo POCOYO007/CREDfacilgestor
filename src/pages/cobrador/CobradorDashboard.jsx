@@ -31,6 +31,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../components/ui';
 import { motion } from 'motion/react';
+import { useMemo } from 'react';
 
 export default function CobradorDashboard() {
   const { usuarioAtual, recebimentos, emprestimos, clientes, config, cobradores } = useAppStore();
@@ -85,29 +86,29 @@ export default function CobradorDashboard() {
     return false;
   };
 
-  const meusRecebimentosHoje = recebimentos.filter(r => 
-    isPertenceAoCobrador(r.cobradorId, r.emprestimoId) && 
+  const meusRecebimentosHoje = useMemo(() => recebimentos.filter(r =>
+    isPertenceAoCobrador(r.cobradorId, r.emprestimoId) &&
     (isTodayDate(r.dataRecebimento) || isTodayDate(r.criadoEm))
-  );
-  
+  ), [recebimentos, emprestimos, cid, usuarioAtual]);
+
   const totalColetadoHoje = meusRecebimentosHoje.reduce((s, r) => s + (parseFloat(r.valor) || 0), 0);
   const multasColetadasHoje = meusRecebimentosHoje.filter(r => r.tipo === 'multa').reduce((s, r) => s + (parseFloat(r.valor) || 0), 0);
-  
+
   const comissaoHoje = totalColetadoHoje * (percentualComissao / 100);
 
   const dataHojeObj = new Date();
-  const meusRecebimentosMes = recebimentos.filter(r => {
+  const meusRecebimentosMes = useMemo(() => recebimentos.filter(r => {
     if (!isPertenceAoCobrador(r.cobradorId, r.emprestimoId)) return false;
     const d = new Date(r.dataRecebimento || r.criadoEm);
     return d.getMonth() === dataHojeObj.getMonth() && d.getFullYear() === dataHojeObj.getFullYear();
-  });
+  }), [recebimentos, emprestimos, cid, usuarioAtual]);
   const totalColetadoMes = meusRecebimentosMes.reduce((s, r) => s + (parseFloat(r.valor) || 0), 0);
   const comissaoMes = totalColetadoMes * (percentualComissao / 100);
-  
-  const minhaRota = emprestimos.filter(e => 
-    isPertenceAoCobrador(e.cobradorId, e.id) && 
+
+  const minhaRota = useMemo(() => emprestimos.filter(e =>
+    isPertenceAoCobrador(e.cobradorId, e.id) &&
     calcularStatus(e) !== 'pago'
-  );
+  ), [emprestimos, cid, usuarioAtual]);
 
   const visitadosHoje = meusRecebimentosHoje.length;
   const totalNaRota = minhaRota.length;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Card, Badge, Button, Input, cn } from '../../components/ui';
 import { formatCurrency, formatDate } from '../../utils/formatters';
@@ -14,14 +14,14 @@ export default function Emprestimos() {
   const [sortBy, setSortBy] = useState('vencimento');
   const navigate = useNavigate();
 
-  const filteredEmprestimos = emprestimos.map(e => ({
+  const filteredEmprestimos = useMemo(() => emprestimos.map(e => ({
     ...e,
     status: calcularStatus(e)
   })).filter(e => {
     const cliente = clientes.find(c => c.id === e.clienteId);
     const cobrador = cobradores.find(c => c.id === e.cobradorId);
-    const matchesSearch = !searchTerm || 
-                          cliente?.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = !searchTerm ||
+                          cliente?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           cliente?.cpfCnpj?.includes(searchTerm) ||
                           cobrador?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'todos' || e.status === statusFilter;
@@ -42,7 +42,7 @@ export default function Emprestimos() {
     }
     // Default: 'vencimento'
     return new Date(a.dataVencimento) - new Date(b.dataVencimento);
-  });
+  }), [emprestimos, clientes, cobradores, searchTerm, statusFilter, sortBy]);
 
   return (
     <div className="space-y-6">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Button, Input, Card, Badge, Modal } from '../../components/ui';
 import { formatCurrency, formatCPF, formatPhone } from '../../utils/formatters';
@@ -24,9 +24,9 @@ export default function Clientes() {
     endereco: { rua: '', numero: '', bairro: '', cidade: '', cep: '' }
   });
 
-  const filteredClientes = clientes
-    .filter(c => 
-      c.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredClientes = useMemo(() => clientes
+    .filter(c =>
+      c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.cpfCnpj.includes(searchTerm)
     )
     .sort((a, b) => {
@@ -34,7 +34,7 @@ export default function Clientes() {
         return a.nome.localeCompare(b.nome);
       }
       return new Date(b.criadoEm) - new Date(a.criadoEm);
-    });
+    }), [clientes, searchTerm, sortBy]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

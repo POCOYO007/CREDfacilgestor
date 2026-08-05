@@ -161,39 +161,46 @@ export default function Dashboard() {
   });
 
   // Obter o intervalo de datas do período selecionado
-  const { inicio, fim } = getPeriodRange(periodo, customStart, customEnd);
+  const { inicio, fim } = React.useMemo(
+    () => getPeriodRange(periodo, customStart, customEnd),
+    [periodo, customStart, customEnd]
+  );
 
   // --- Filtros Multi-Tenant sobre Coleções (Zustand State) ---
+  // Memoizados: essas listas fazem parse de data item a item, então sem
+  // useMemo elas rodavam de novo a cada render (inclusive quando o motivo do
+  // render era outra coleção do store mudando, já que useAppStore() sem
+  // seletor re-renderiza em qualquer set()).
 
   // 1. Recebimentos do período
-  const recebimentosFiltrados = recebimentos.filter(r => {
+  const recebimentosFiltrados = React.useMemo(() => recebimentos.filter(r => {
     const data = r.dataRecebimento || r.criadoEm;
     return isDateInRange(data, inicio, fim);
-  });
+  }), [recebimentos, inicio, fim]);
 
   // 2. Despesas do período (Somente as APROVADAS)
-  const despesasFiltradas = despesas.filter(d => {
+  const despesasFiltradas = React.useMemo(() => despesas.filter(d => {
     if (d.aprovada !== true) return false;
     const data = d.data || d.criadoEm;
     return isDateInRange(data, inicio, fim);
-  });
+  }), [despesas, inicio, fim]);
 
   // 3. Pagamentos/Repasses aos cobradores do período
-  const pagamentosCobradoresFiltrados = (pagamentosCobradores || []).filter(p => {
+  const pagamentosCobradoresFiltrados = React.useMemo(() => (pagamentosCobradores || []).filter(p => {
     const data = p.data || p.criadoEm;
     return isDateInRange(data, inicio, fim);
-  });
+  }), [pagamentosCobradores, inicio, fim]);
 
   // 4. Empréstimos criados ou ativos no período
-  const emprestimosComStatus = emprestimos.map(e => ({
+  const emprestimosComStatus = React.useMemo(() => emprestimos.map(e => ({
     ...e,
     status: calcularStatus(e)
-  }));
+  })), [emprestimos]);
 
-  const emprestimosFiltrados = emprestimosComStatus.filter(e => {
+  const emprestimosFiltrados = React.useMemo(() => emprestimosComStatus.filter(e => {
     const data = e.criadoEm;
     return isDateInRange(data, inicio, fim);
-  });
+  }), [emprestimosComStatus, inicio, fim]);
 
   // --- Cálculos Financeiros Respeitando o Período ---
 
@@ -217,16 +224,27 @@ export default function Dashboard() {
 
   // --- Indicadores de Carteira de Longo Prazo / Estáticos ---
   // Estes indicam o estado global atual e permanecem corretos para o gestor
-  const capitalInvestidoTotal = emprestimos.reduce((s, e) => s + (e.valorPrincipalInicial || e.valorPrincipal || 0), 0);
-  const saldoEmRua = emprestimosComStatus
-    .filter(e => e.status !== 'pago')
-    .reduce((s, e) => s + (e.valorPrincipal || 0), 0);
-  const multasPendentesTotal = emprestimosComStatus
-    .filter(e => e.status !== 'pago')
-    .reduce((s, e) => s + calcularMulta(e), 0);
-  const projecaoMensal = emprestimosComStatus
-    .filter(e => e.status !== 'pago')
-    .reduce((s, e) => s + (e.valorParcela || 0), 0);
+  // calcularMulta faz parse de data por item, então também vale memoizar.
+  const capitalInvestidoTotal = React.useMemo(
+    () => emprestimos.reduce((s, e) => s + (e.valorPrincipalInicial || e.valorPrincipal || 0), 0),
+    [emprestimos]
+  );
+  const carteiraAberta = React.useMemo(
+    () => emprestimosComStatus.filter(e => e.status !== 'pago'),
+    [emprestimosComStatus]
+  );
+  const saldoEmRua = React.useMemo(
+    () => carteiraAberta.reduce((s, e) => s + (e.valorPrincipal || 0), 0),
+    [carteiraAberta]
+  );
+  const multasPendentesTotal = React.useMemo(
+    () => carteiraAberta.reduce((s, e) => s + calcularMulta(e), 0),
+    [carteiraAberta]
+  );
+  const projecaoMensal = React.useMemo(
+    () => carteiraAberta.reduce((s, e) => s + (e.valorParcela || 0), 0),
+    [carteiraAberta]
+  );
 
   const ativosCount = emprestimosFiltrados.filter(e => e.status === 'ativo').length;
   const atrasadosCount = emprestimosFiltrados.filter(e => e.status === 'atrasado').length;
@@ -236,17 +254,23 @@ export default function Dashboard() {
   const taxaInadimplenciaPeriodo = totalCarteiraAtivaPeriodo ? ((atrasadosCount / totalCarteiraAtivaPeriodo) * 100).toFixed(1) : 0;
 
   // --- Atividades Recentes ---
-  const coletasHoje = [...recebimentos]
+  const coletasHoje = React.useMemo(() => [...recebimentos]
     .filter(r => isTodayDate(r.dataRecebimento || r.criadoEm))
-    .sort((a, b) => new Date(b.dataRecebimento || b.criadoEm) - new Date(a.dataRecebimento || a.criadoEm));
+    .sort((a, b) => new Date(b.dataRecebimento || b.criadoEm) - new Date(a.dataRecebimento || a.criadoEm)),
+    [recebimentos]
+  );
 
-  const despesasRecentes = [...despesas]
+  const despesasRecentes = React.useMemo(() => [...despesas]
     .sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm))
-    .slice(0, 5);
+    .slice(0, 5),
+    [despesas]
+  );
 
-  const contratosRecentes = [...emprestimosComStatus]
+  const contratosRecentes = React.useMemo(() => [...emprestimosComStatus]
     .sort((a, b) => new Date(b.criadoEm) - new Date(a.criadoEm))
-    .slice(0, 5);
+    .slice(0, 5),
+    [emprestimosComStatus]
+  );
 
   // --- Conectando Período ao Gráfico de Fluxo de Caixa ---
 
@@ -329,7 +353,12 @@ export default function Dashboard() {
     }
   };
 
-  const chartData = getChartDataForRange(inicio, fim);
+  // Loop aninhado (varre recebimentosFiltrados uma vez por bucket do
+  // gráfico) — é o cálculo mais caro da tela, por isso memoizado à parte.
+  const chartData = React.useMemo(
+    () => getChartDataForRange(inicio, fim),
+    [recebimentosFiltrados, inicio, fim]
+  );
 
   // Dados do gráfico de pizza
   const pieData = [

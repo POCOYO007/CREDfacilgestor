@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Card, Button, Badge, Input, Modal, cn } from '../../components/ui';
 import { formatCurrency, formatPhone, formatDate, substituirVariaveis, gerarTextoExtrato } from '../../utils/formatters';
@@ -63,26 +63,26 @@ export default function MinhaRota() {
     return false;
   };
 
-  const baseRota = emprestimos.filter(e => 
+  const baseRota = useMemo(() => emprestimos.filter(e =>
     isPertenceAoCobrador(e.cobradorId, e.id)
   ).map(e => ({
     ...e,
     status: calcularStatus(e)
-  })).filter(e => e.status !== 'pago');
+  })).filter(e => e.status !== 'pago'), [emprestimos, cid, usuarioAtual]);
 
   const countTodos = baseRota.length;
   const countAtrasados = baseRota.filter(e => e.status === 'atrasado').length;
   const countEmDia = baseRota.filter(e => e.status === 'ativo').length;
 
-  const rota = baseRota.filter(e => {
+  const rota = useMemo(() => baseRota.filter(e => {
     const cliente = clientes.find(c => c.id === e.clienteId);
     const term = searchTerm.toLowerCase().trim();
-    const matchesSearch = !term || 
+    const matchesSearch = !term ||
       cliente?.nome?.toLowerCase().includes(term) ||
       cliente?.endereco?.bairro?.toLowerCase().includes(term) ||
       cliente?.cpfCnpj?.includes(term);
 
-    const matchesStatus = 
+    const matchesStatus =
       statusFilter === 'todos' ? true :
       statusFilter === 'atrasado' ? e.status === 'atrasado' :
       statusFilter === 'em_dia' ? e.status === 'ativo' : true;
@@ -106,7 +106,7 @@ export default function MinhaRota() {
     }
     // Default: 'vencimento'
     return new Date(a.dataVencimento) - new Date(b.dataVencimento);
-  });
+  }), [baseRota, clientes, searchTerm, statusFilter, sortBy]);
 
   const handleOpenPay = (emp, type = 'regular') => {
     setSelectedEmp(emp);
