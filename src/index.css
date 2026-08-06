@@ -1,9 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Lato", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "DM Mono", ui-monospace, SFMono-Regular, monospace;
+  /* Números de valores usam a mesma fonte da marca (não um mono de código
+     tipo DM Mono) — só com dígitos tabulares (largura fixa) via
+     font-variant-numeric abaixo, que é como o Inter de verdade exibe
+     valores monetários. */
+  --font-mono: "Lato", ui-sans-serif, system-ui, sans-serif;
 
   --color-brand-primary: var(--brand-primary);
   --color-brand-primary-dark: var(--brand-primary-dark);
@@ -108,6 +112,9 @@
 @layer base {
   body {
     @apply bg-brand-secondary text-text-primary font-sans antialiased transition-colors duration-300;
+    /* Dígitos com largura fixa (alinham em tabelas/colunas de valores) —
+       só afeta números, letras continuam normais. */
+    font-variant-numeric: tabular-nums;
   }
 
   /* Custom Scrollbar */
