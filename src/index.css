@@ -32,32 +32,17 @@
 }
 
 :root {
-  /* Paleta extraída do redesign do Internet Banking do Inter
-     (github.com/lukemorales/bancointer): primary/primaryDark/secondary
-     não mudam entre temas — só os neutros (superfície/texto) mudam. */
+  /* :root = mesmos valores do tema claro (padrão do app). Serve de
+     fallback antes do JS aplicar o atributo data-theme no <html>. */
   --brand-primary: #FF8700;
   --brand-primary-dark: #FF7A00;
   --brand-primary-light: #FFF0E6;
-  --brand-secondary: #1A1A2E;
-  --brand-surface: #16213E;
-  --brand-surface-2: #0F3460;
   --brand-accent: #FF500F;
-
-  --text-primary: #FFFFFF;
-  --text-secondary: #A0AEC0;
-  --text-muted: #718096;
 
   --success: #20C05C;
   --warning: #ECC94B;
   --danger: #FD4F48;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --overlay-subtle: rgba(255, 255, 255, 0.05);
-  --overlay-strong: rgba(255, 255, 255, 0.10);
-}
 
-/* Tema claro (padrão) — fundo cinza muito claro, cartões brancos, texto
-   quase-preto, laranja/vermelho-laranja só nos destaques. */
-[data-theme='light'] {
   --brand-secondary: #F5F6FA;
   --brand-surface: #FFFFFF;
   --brand-surface-2: #F1F3F6;
@@ -69,6 +54,55 @@
   --border-subtle: rgba(15, 23, 42, 0.08);
   --overlay-subtle: rgba(15, 23, 42, 0.035);
   --overlay-strong: rgba(15, 23, 42, 0.07);
+}
+
+/* Tema claro (padrão) — fundo cinza muito claro, cartões brancos, texto
+   quase-preto, laranja/vermelho-laranja só nos destaques. Idêntico ao
+   :root acima, mantido explícito por clareza. */
+[data-theme='light'] {
+  --brand-primary: #FF8700;
+  --brand-primary-dark: #FF7A00;
+  --brand-accent: #FF500F;
+
+  --success: #20C05C;
+  --warning: #ECC94B;
+  --danger: #FD4F48;
+
+  --brand-secondary: #F5F6FA;
+  --brand-surface: #FFFFFF;
+  --brand-surface-2: #F1F3F6;
+
+  --text-primary: #14161A;
+  --text-secondary: #6C757D;
+  --text-muted: #8C91A5;
+
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --overlay-subtle: rgba(15, 23, 42, 0.035);
+  --overlay-strong: rgba(15, 23, 42, 0.07);
+}
+
+/* Tema escuro — "Inter Black" premium: preto profundo, superfícies em
+   grafite, laranja como único destaque, alto contraste, sem glow/neon. */
+[data-theme='dark'] {
+  --brand-primary: #FF7A00;
+  --brand-primary-dark: #D95F00;
+  --brand-accent: #E56D00;
+
+  --success: #35C978;
+  --warning: #F4B223;
+  --danger: #F05252;
+
+  --brand-secondary: #080808;
+  --brand-surface: #1A1A1A;
+  --brand-surface-2: #222222;
+
+  --text-primary: #F7F7F7;
+  --text-secondary: #A6A6A6;
+  --text-muted: #6F6F6F;
+
+  --border-subtle: #2A2A2A;
+  --overlay-subtle: rgba(255, 255, 255, 0.04);
+  --overlay-strong: rgba(255, 255, 255, 0.08);
 }
 
 @layer base {
@@ -108,7 +142,7 @@
   }
 
   [data-theme='dark'] .bento-card {
-    box-shadow: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   }
 
   .btn-primary {
