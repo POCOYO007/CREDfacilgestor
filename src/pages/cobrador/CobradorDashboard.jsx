@@ -272,33 +272,33 @@ export default function CobradorDashboard() {
             </h3>
 
             {/* Bloco Destaque: Minha Comissão */}
-            <div className="mb-6 p-4 rounded-2xl bg-linear-to-r from-emerald-500/15 via-emerald-500/5 to-transparent border border-emerald-500/30 flex items-center justify-between shadow-xs">
+            <div className="mb-6 p-4 rounded-2xl bg-black/60 border border-black/40 flex items-center justify-between shadow-xs">
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Coins size={15} className="text-black shrink-0" />
-                  <span className="text-[10px] font-black uppercase tracking-wider text-black">
+                  <Coins size={15} className="text-white shrink-0" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-white">
                     Minha Comissão {labelPeriodo} ({percentualComissao}%)
                   </span>
-                  {periodo === 'hoje' && <span className="w-1.5 h-1.5 rounded-full bg-black animate-ping shrink-0" />}
+                  {periodo === 'hoje' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping shrink-0" />}
                 </div>
-                <span className="text-2xl sm:text-3xl font-black font-mono text-black tracking-tight">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight">
                   {formatCurrency(comissaoPeriodo)}
                 </span>
               </div>
-              <div className="text-right border-l border-white/10 pl-4 shrink-0">
-                <span className="text-[9px] font-black uppercase text-white/50 block tracking-wider">Acumulado Mês</span>
-                <span className="text-xs sm:text-sm font-mono font-bold text-white/90">{formatCurrency(comissaoMes)}</span>
+              <div className="text-right border-l border-white/20 pl-4 shrink-0">
+                <span className="text-[9px] font-black uppercase text-white/60 block tracking-wider">Acumulado Mês</span>
+                <span className="text-xs sm:text-sm font-mono font-bold text-white">{formatCurrency(comissaoMes)}</span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5">
-                <span className="text-[8px] uppercase font-black text-white/40 tracking-[0.2em] block mb-1">Apenas Multas</span>
-                <span className="text-lg font-bold font-mono text-warning">{formatCurrency(multasColetadasPeriodo)}</span>
+              <div className="p-3 rounded-2xl bg-black/60 border border-black/40">
+                <span className="text-[8px] uppercase font-black text-white/60 tracking-[0.2em] block mb-1">Apenas Multas</span>
+                <span className="text-lg font-bold font-mono text-white">{formatCurrency(multasColetadasPeriodo)}</span>
               </div>
-              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-right">
-                <span className="text-[8px] uppercase font-black text-white/40 tracking-[0.2em] block mb-1">Capital/Juros</span>
-                <span className="text-lg font-bold font-mono text-black">{formatCurrency(totalColetadoPeriodo - multasColetadasPeriodo)}</span>
+              <div className="p-3 rounded-2xl bg-black/60 border border-black/40 text-right">
+                <span className="text-[8px] uppercase font-black text-white/60 tracking-[0.2em] block mb-1">Capital/Juros</span>
+                <span className="text-lg font-bold font-mono text-white">{formatCurrency(totalColetadoPeriodo - multasColetadasPeriodo)}</span>
               </div>
             </div>
             
