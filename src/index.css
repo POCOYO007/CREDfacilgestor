@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Lato", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "DM Mono", ui-monospace, SFMono-Regular, monospace;
 
   --color-brand-primary: var(--brand-primary);
@@ -12,54 +12,60 @@
   --color-brand-surface: var(--brand-surface);
   --color-brand-surface-2: var(--brand-surface-2);
   --color-brand-accent: var(--brand-accent);
-  
+
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
-  
+
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-border-subtle: var(--border-subtle);
   --color-overlay-subtle: var(--overlay-subtle);
   --color-overlay-strong: var(--overlay-strong);
+
+  /* Raio de borda mais contido — produto bancário, não app bubbly */
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 1rem;
 }
 
 :root {
-  --brand-primary: #FF6B00;
-  --brand-primary-dark: #E05A00;
+  /* Paleta extraída do redesign do Internet Banking do Inter
+     (github.com/lukemorales/bancointer): primary/primaryDark/secondary
+     não mudam entre temas — só os neutros (superfície/texto) mudam. */
+  --brand-primary: #FF8700;
+  --brand-primary-dark: #FF7A00;
   --brand-primary-light: #FFF0E6;
   --brand-secondary: #1A1A2E;
   --brand-surface: #16213E;
   --brand-surface-2: #0F3460;
-  --brand-accent: #E94560;
+  --brand-accent: #FF500F;
 
   --text-primary: #FFFFFF;
   --text-secondary: #A0AEC0;
   --text-muted: #718096;
 
-  --success: #48BB78;
+  --success: #20C05C;
   --warning: #ECC94B;
-  --danger: #FC8181;
+  --danger: #FD4F48;
   --border-subtle: rgba(255, 255, 255, 0.08);
   --overlay-subtle: rgba(255, 255, 255, 0.05);
   --overlay-strong: rgba(255, 255, 255, 0.10);
 }
 
-/* Tema claro (padrão) — estilo banco digital: fundo branco/cinza muito
-   claro, cartões brancos, texto quase-preto, laranja só nos destaques. */
+/* Tema claro (padrão) — fundo cinza muito claro, cartões brancos, texto
+   quase-preto, laranja/vermelho-laranja só nos destaques. */
 [data-theme='light'] {
-  --brand-secondary: #F5F6F8;
+  --brand-secondary: #F5F6FA;
   --brand-surface: #FFFFFF;
   --brand-surface-2: #F1F3F6;
 
   --text-primary: #14161A;
-  --text-secondary: #5B6472;
-  --text-muted: #8A93A3;
+  --text-secondary: #6C757D;
+  --text-muted: #8C91A5;
 
-  --success: #1DA968;
-  --warning: #D6900A;
-  --danger: #E5484D;
   --border-subtle: rgba(15, 23, 42, 0.08);
   --overlay-subtle: rgba(15, 23, 42, 0.035);
   --overlay-strong: rgba(15, 23, 42, 0.07);
@@ -97,7 +103,7 @@
     background: var(--brand-surface);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border-subtle);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
     @apply rounded-2xl p-6 transition-all duration-200 hover:border-brand-primary/30;
   }
 
@@ -106,7 +112,7 @@
   }
 
   .btn-primary {
-    @apply bg-linear-to-r from-brand-primary to-[#FF8C42] text-white font-semibold py-2 px-4 rounded-xl shadow-lg hover:shadow-brand-primary/20 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    @apply bg-linear-to-r from-brand-accent to-brand-primary text-white font-semibold py-2 px-4 rounded-xl shadow-lg hover:shadow-brand-primary/20 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .input-field {

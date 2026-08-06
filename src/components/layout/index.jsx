@@ -55,7 +55,7 @@ export function AdminLayout() {
         isSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0 lg:w-0 lg:opacity-0 lg:pointer-events-none"
       )}>
         <div className="p-6 flex items-center gap-3 overflow-hidden whitespace-nowrap">
-          <div className="w-10 h-10 shrink-0 rounded-xl bg-linear-to-br from-brand-primary to-[#FF8C42] flex items-center justify-center shadow-lg shadow-brand-primary/20">
+          <div className="w-10 h-10 shrink-0 rounded-xl bg-linear-to-br from-brand-accent to-brand-primary flex items-center justify-center shadow-lg shadow-brand-primary/20">
             <Scale className="text-white w-5 h-5" />
           </div>
           <span className="font-bold text-xl tracking-tight truncate">{config.nomeEmpresa}</span>
@@ -160,7 +160,7 @@ export function CobradorLayout() {
         isSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0 lg:w-0 lg:opacity-0 lg:pointer-events-none"
       )}>
         <div className="p-6 flex items-center gap-3 overflow-hidden whitespace-nowrap">
-          <div className="w-10 h-10 shrink-0 rounded-xl bg-linear-to-br from-brand-primary to-[#FF8C42] flex items-center justify-center shadow-lg shadow-brand-primary/20">
+          <div className="w-10 h-10 shrink-0 rounded-xl bg-linear-to-br from-brand-accent to-brand-primary flex items-center justify-center shadow-lg shadow-brand-primary/20">
             <Scale className="text-white w-5 h-5" />
           </div>
           <span className="font-bold text-xl tracking-tight truncate">{config.nomeEmpresa}</span>

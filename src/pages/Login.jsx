@@ -109,7 +109,7 @@ export default function Login() {
 
       <Card className="w-full max-w-md p-10 relative z-10 shadow-2xl">
         <div className="flex flex-col items-center mb-10">
-          <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-brand-primary to-[#FF8C42] flex items-center justify-center shadow-2xl shadow-brand-primary/30 mb-6 transform hover:rotate-6 transition-transform duration-300">
+          <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-brand-accent to-brand-primary flex items-center justify-center shadow-2xl shadow-brand-primary/30 mb-6 transform hover:rotate-6 transition-transform duration-300">
             <Scale className="text-white w-11 h-11" />
           </div>
           <h1 className="text-3xl font-bold tracking-tighter text-text-primary text-center leading-tight">Meu Jurista Online</h1>

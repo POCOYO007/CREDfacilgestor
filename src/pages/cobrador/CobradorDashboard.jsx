@@ -247,7 +247,7 @@ export default function CobradorDashboard() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="relative overflow-hidden bg-linear-to-br from-brand-primary to-brand-primary-dark border border-white/10 text-white p-6 shadow-2xl shadow-brand-primary/30 ring-1 ring-white/10">
+        <Card className="relative overflow-hidden bg-linear-to-br from-brand-accent to-brand-primary border border-white/10 text-white p-6 shadow-2xl shadow-brand-primary/30 ring-1 ring-white/10">
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/15 rounded-full blur-3xl" />
           <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-3xl opacity-50" />
           
