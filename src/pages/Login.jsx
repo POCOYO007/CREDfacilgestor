@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { auth, db } from '../lib/firebase';
-import { 
-  signInWithEmailAndPassword, 
-  signInWithPopup, 
+import {
+  signInWithEmailAndPassword,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider
 } from 'firebase/auth';
 import { collectionGroup, query, where, limit, getDocs } from 'firebase/firestore';
@@ -30,6 +31,27 @@ export default function Login() {
       else navigate('/cobrador');
     }
   }, [usuarioAtual, navigate]);
+
+  // Resultado do signInWithRedirect: a página recarrega inteira depois do
+  // Google, então precisamos captar o resultado (ou erro) aqui em vez de no
+  // handler original do clique — esse já se foi junto com o navigate.
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && !cancelled) {
+          toast.success('Bem-vindo!');
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error(error);
+          toast.error(`Erro ao entrar com Google: ${error.code || error.message}`);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -82,13 +104,17 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
+      // Redirect em vez de popup: no mobile (Safari/Chrome iOS em particular)
+      // o popup falha com "missing initial state" porque o navegador
+      // particiona o sessionStorage entre a janela principal e o popup. O
+      // redirect usa navegação de página inteira e não sofre disso.
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      toast.success('Bem-vindo!');
+      await signInWithRedirect(auth, provider);
+      // A página navega pro Google aqui — o resultado é tratado no useEffect
+      // com getRedirectResult() quando o usuário voltar.
     } catch (error) {
       console.error(error);
       toast.error(`Erro ao entrar com Google: ${error.code || error.message}`);
-    } finally {
       setLoading(false);
     }
   };
