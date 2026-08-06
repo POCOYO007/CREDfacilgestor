@@ -257,8 +257,8 @@ export default function CobradorDashboard() {
                 <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/50 mb-1">Total Coletado {labelPeriodo}</p>
                 {periodo === 'hoje' ? (
                   <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                    <span className="text-[10px] font-bold text-success capitalize">Tempo Real</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
+                    <span className="text-[10px] font-bold text-black capitalize">Tempo Real</span>
                   </div>
                 ) : (
                   <span className="text-[10px] font-bold text-text-muted">{meusRecebimentosPeriodo.length} pagamento(s)</span>
@@ -275,13 +275,13 @@ export default function CobradorDashboard() {
             <div className="mb-6 p-4 rounded-2xl bg-linear-to-r from-emerald-500/15 via-emerald-500/5 to-transparent border border-emerald-500/30 flex items-center justify-between shadow-xs">
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Coins size={15} className="text-emerald-400 shrink-0" />
-                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300">
+                  <Coins size={15} className="text-black shrink-0" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-black">
                     Minha Comissão {labelPeriodo} ({percentualComissao}%)
                   </span>
-                  {periodo === 'hoje' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping shrink-0" />}
+                  {periodo === 'hoje' && <span className="w-1.5 h-1.5 rounded-full bg-black animate-ping shrink-0" />}
                 </div>
-                <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-400 tracking-tight">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-black tracking-tight">
                   {formatCurrency(comissaoPeriodo)}
                 </span>
               </div>
@@ -298,7 +298,7 @@ export default function CobradorDashboard() {
               </div>
               <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-right">
                 <span className="text-[8px] uppercase font-black text-white/40 tracking-[0.2em] block mb-1">Capital/Juros</span>
-                <span className="text-lg font-bold font-mono text-success">{formatCurrency(totalColetadoPeriodo - multasColetadasPeriodo)}</span>
+                <span className="text-lg font-bold font-mono text-black">{formatCurrency(totalColetadoPeriodo - multasColetadasPeriodo)}</span>
               </div>
             </div>
             
