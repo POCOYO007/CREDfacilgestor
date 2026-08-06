@@ -311,7 +311,7 @@ export default function MinhaRota() {
               <input
                 type="text"
                 placeholder="Buscar cliente ou bairro..."
-                className="w-full bg-transparent pl-10 pr-8 py-3 text-sm focus:outline-hidden font-bold text-white placeholder:text-text-muted/50"
+                className="w-full bg-transparent pl-10 pr-8 py-3 text-sm focus:outline-hidden font-bold text-text-primary placeholder:text-text-muted/50"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
@@ -319,7 +319,7 @@ export default function MinhaRota() {
                 <button 
                   type="button" 
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-3 p-1 text-text-muted hover:text-white"
+                  className="absolute right-3 p-1 text-text-muted hover:text-text-primary"
                 >
                   <X size={14} />
                 </button>
@@ -334,7 +334,7 @@ export default function MinhaRota() {
               "h-12 px-3 sm:px-4 rounded-2xl flex items-center gap-2 border font-bold text-xs transition-all shrink-0 shadow-sm cursor-pointer",
               (statusFilter !== 'todos' || sortBy !== 'vencimento')
                 ? "bg-brand-primary/20 border-brand-primary text-brand-primary"
-                : "bg-brand-surface border-border-subtle text-text-secondary hover:text-white hover:border-brand-primary/40"
+                : "bg-brand-surface border-border-subtle text-text-secondary hover:text-text-primary hover:border-brand-primary/40"
             )}
             title="Filtrar e Ordenar"
           >
@@ -355,14 +355,14 @@ export default function MinhaRota() {
               className={cn(
                 "px-2.5 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0 border cursor-pointer",
                 statusFilter === 'todos'
-                  ? "bg-brand-primary text-brand-secondary border-brand-primary shadow-sm"
-                  : "bg-brand-surface/90 border-border-subtle text-text-muted hover:text-white"
+                  ? "bg-brand-primary text-white border-brand-primary shadow-sm"
+                  : "bg-brand-surface/90 border-border-subtle text-text-muted hover:text-text-primary"
               )}
             >
               <span>Todos</span>
               <span className={cn(
                 "px-1.5 py-0.2 rounded-md text-[9px]",
-                statusFilter === 'todos' ? "bg-black/20 text-brand-secondary font-mono" : "bg-white/5 text-text-muted font-mono"
+                statusFilter === 'todos' ? "bg-black/20 text-white font-mono" : "bg-text-primary/5 text-text-muted font-mono"
               )}>
                 {countTodos}
               </span>
@@ -382,7 +382,7 @@ export default function MinhaRota() {
               <span>Atrasados</span>
               <span className={cn(
                 "px-1.5 py-0.2 rounded-md text-[9px]",
-                statusFilter === 'atrasado' ? "bg-white/20 text-white font-mono" : "bg-white/5 text-text-muted font-mono"
+                statusFilter === 'atrasado' ? "bg-white/20 text-white font-mono" : "bg-text-primary/5 text-text-muted font-mono"
               )}>
                 {countAtrasados}
               </span>
@@ -394,7 +394,7 @@ export default function MinhaRota() {
               className={cn(
                 "px-2.5 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0 border cursor-pointer",
                 statusFilter === 'em_dia'
-                  ? "bg-emerald-500 text-brand-secondary border-emerald-500 shadow-sm"
+                  ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
                   : "bg-brand-surface/90 border-border-subtle text-text-muted hover:text-emerald-400"
               )}
             >
@@ -402,7 +402,7 @@ export default function MinhaRota() {
               <span>Em Dia</span>
               <span className={cn(
                 "px-1.5 py-0.2 rounded-md text-[9px]",
-                statusFilter === 'em_dia' ? "bg-black/20 text-brand-secondary font-mono" : "bg-white/5 text-text-muted font-mono"
+                statusFilter === 'em_dia' ? "bg-black/20 text-white font-mono" : "bg-text-primary/5 text-text-muted font-mono"
               )}>
                 {countEmDia}
               </span>
@@ -414,12 +414,13 @@ export default function MinhaRota() {
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value)}
-                className="bg-[#181b22] text-white border border-border-subtle text-[11px] font-bold rounded-xl pl-2.5 pr-7 py-1.5 focus:outline-none focus:border-brand-primary cursor-pointer appearance-none shadow-sm"
+                className="bg-brand-surface-2 text-text-primary border border-border-subtle text-[11px] font-bold rounded-xl pl-2.5 pr-7 py-1.5 focus:outline-none focus:border-brand-primary cursor-pointer appearance-none shadow-sm"
+                style={{ backgroundColor: 'var(--brand-surface-2)', color: 'var(--text-primary)' }}
               >
-                <option value="vencimento" className="bg-[#181b22] text-white">📅 Vencimento</option>
-                <option value="nome" className="bg-[#181b22] text-white">🔤 Nome (A-Z)</option>
-                <option value="atrasado" className="bg-[#181b22] text-white">⚠️ Mais Atrasados</option>
-                <option value="bairro" className="bg-[#181b22] text-white">📍 Bairro</option>
+                <option value="vencimento" className="bg-brand-surface-2 text-text-primary">📅 Vencimento</option>
+                <option value="nome" className="bg-brand-surface-2 text-text-primary">🔤 Nome (A-Z)</option>
+                <option value="atrasado" className="bg-brand-surface-2 text-text-primary">⚠️ Mais Atrasados</option>
+                <option value="bairro" className="bg-brand-surface-2 text-text-primary">📍 Bairro</option>
               </select>
               <ArrowUpDown size={12} className="absolute right-2.5 text-brand-primary pointer-events-none" />
             </div>
@@ -482,7 +483,7 @@ export default function MinhaRota() {
                         <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.1em] mb-1">
                           {emp.modalidade === 'parcelado' ? 'Valor Recebido' : 'Vl. Empréstimo'}
                         </span>
-                        <span className="text-xs font-black font-mono text-white">
+                        <span className="text-xs font-black font-mono text-text-primary">
                           {emp.modalidade === 'parcelado' 
                             ? formatCurrency(emp.valorPrincipalInicial) 
                             : formatCurrency(emp.valorPrincipalInicial || emp.valorPrincipal)}
@@ -576,7 +577,7 @@ export default function MinhaRota() {
                       <div className="flex gap-1 shrink-0">
                         <motion.button 
                           whileTap={{ scale: 0.9 }}
-                          className="w-10 h-10 rounded-xl bg-brand-surface-2 border border-border-subtle flex items-center justify-center text-indigo-400 font-bold hover:bg-white/5"
+                          className="w-10 h-10 rounded-xl bg-brand-surface-2 border border-border-subtle flex items-center justify-center text-indigo-400 font-bold hover:bg-text-primary/5"
                           title="Pasta do Cliente"
                           onClick={() => {
                             setSelectedFolderCliente(cliente);
@@ -706,7 +707,7 @@ export default function MinhaRota() {
         title={
           <div className="flex flex-col gap-0.5">
             <span className="text-[10px] font-black text-brand-primary uppercase tracking-[0.2em]">Pasta do Cliente</span>
-            <span className="text-base font-black truncate text-white">{selectedFolderCliente?.nome}</span>
+            <span className="text-base font-black truncate text-text-primary">{selectedFolderCliente?.nome}</span>
           </div>
         }
         footer={
@@ -723,25 +724,25 @@ export default function MinhaRota() {
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-text-muted block text-[10px]">CPF/CNPJ</span>
-                  <span className="font-bold font-mono text-white">{selectedFolderCliente.cpfCnpj || 'N/A'}</span>
+                  <span className="font-bold font-mono text-text-primary">{selectedFolderCliente.cpfCnpj || 'N/A'}</span>
                 </div>
                 <div>
                   <span className="text-text-muted block text-[10px]">Telefone</span>
-                  <a href={`tel:${selectedFolderCliente.telefone}`} className="font-bold text-white underline hover:text-brand-primary flex items-center gap-1">
+                  <a href={`tel:${selectedFolderCliente.telefone}`} className="font-bold text-text-primary underline hover:text-brand-primary flex items-center gap-1">
                     <Phone size={10} /> {selectedFolderCliente.telefone}
                   </a>
                 </div>
               </div>
-              <div className="pt-2 border-t border-white/5">
+              <div className="pt-2 border-t border-text-primary/5">
                 <span className="text-text-muted block text-[10px] mb-1">Endereço</span>
-                <p className="text-xs font-bold text-white pb-2 leading-relaxed">
+                <p className="text-xs font-bold text-text-primary pb-2 leading-relaxed">
                   {selectedFolderCliente.endereco.rua}, {selectedFolderCliente.endereco.numero} <br />
                   {selectedFolderCliente.endereco.bairro} - {selectedFolderCliente.endereco.cidade}
                 </p>
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="w-full gap-2 text-[10px] font-black uppercase mt-1 text-slate-300 border-white/10 shrink-0"
+                  className="w-full gap-2 text-[10px] font-black uppercase mt-1 text-text-secondary border-text-primary/10 shrink-0"
                   onClick={() => {
                     const { rua, numero, bairro, cidade } = selectedFolderCliente.endereco;
                     const query = `${rua}, ${numero} - ${bairro}, ${cidade}`;
@@ -764,9 +765,9 @@ export default function MinhaRota() {
                     const status = calcularStatus(e);
                     const isAtivo = status !== 'pago';
                     return (
-                      <div key={e.id} className={cn("p-4 rounded-xl border flex flex-col gap-3 text-left", isAtivo ? "bg-white/5 border-white/10" : "bg-white/[0.02] border-white/5 opacity-60")}>
+                      <div key={e.id} className={cn("p-4 rounded-xl border flex flex-col gap-3 text-left", isAtivo ? "bg-text-primary/5 border-text-primary/10" : "bg-text-primary/[0.02] border-text-primary/5 opacity-60")}>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs font-bold text-white text-left">Contrato: <span className="font-mono text-brand-primary">#{e.id.substring(0, 6).toUpperCase()}</span></span>
+                          <span className="text-xs font-bold text-text-primary text-left">Contrato: <span className="font-mono text-brand-primary">#{e.id.substring(0, 6).toUpperCase()}</span></span>
                           <Badge variant={status === 'atrasado' ? 'danger' : status === 'pago' ? 'neutral' : 'success'} className="text-[9px] font-black uppercase shrink-0">
                             {status === 'atrasado' ? 'EM ATRASO' : status === 'pago' ? 'PAGO / QUITADO' : 'REGULAR'}
                           </Badge>
@@ -774,7 +775,7 @@ export default function MinhaRota() {
                         <div className="grid grid-cols-2 gap-2 text-[11px] text-left">
                           <div>
                             <span className="text-text-muted block text-[9px] text-left">Valor Original</span>
-                            <span className="font-black text-white font-mono">{formatCurrency(e.valorPrincipalInicial || e.valorPrincipal)}</span>
+                            <span className="font-black text-text-primary font-mono">{formatCurrency(e.valorPrincipalInicial || e.valorPrincipal)}</span>
                           </div>
                           <div>
                             <span className="text-text-muted block text-[9px] text-left">Saldo Atual</span>
@@ -782,18 +783,18 @@ export default function MinhaRota() {
                           </div>
                           <div>
                             <span className="text-text-muted block text-[9px] text-left">Parcela</span>
-                            <span className="font-bold text-white font-mono">{formatCurrency(e.valorParcela)} ({e.parcelasPagas || 0}/{e.totalParcelas || 10})</span>
+                            <span className="font-bold text-text-primary font-mono">{formatCurrency(e.valorParcela)} ({e.parcelasPagas || 0}/{e.totalParcelas || 10})</span>
                           </div>
                           <div>
                             <span className="text-text-muted block text-[9px] text-left">Vencimento</span>
-                            <span className="font-bold text-white font-mono">{formatDate(e.dataVencimento)}</span>
+                            <span className="font-bold text-text-primary font-mono">{formatDate(e.dataVencimento)}</span>
                           </div>
                         </div>
                       </div>
                     );
                   })}
                 {emprestimos.filter(e => e.clienteId === selectedFolderCliente.id).length === 0 && (
-                  <p className="text-xs text-text-muted text-center py-4 bg-white/5 rounded-xl border border-dashed border-white/10">Nenhum contrato encontrado.</p>
+                  <p className="text-xs text-text-muted text-center py-4 bg-text-primary/5 rounded-xl border border-dashed border-text-primary/10">Nenhum contrato encontrado.</p>
                 )}
               </div>
             </div>
@@ -806,9 +807,9 @@ export default function MinhaRota() {
                   .filter(r => r.clienteId === selectedFolderCliente.id)
                   .sort((a, b) => new Date(b.dataRecebimento).getTime() - new Date(a.dataRecebimento).getTime())
                   .map(r => (
-                    <div key={r.id} className="p-3 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1 text-xs text-left">
+                    <div key={r.id} className="p-3 rounded-xl bg-text-primary/5 border border-text-primary/5 flex flex-col gap-1 text-xs text-left">
                       <div className="flex justify-between items-center">
-                        <span className="font-black text-white font-mono">{formatCurrency(r.valor)}</span>
+                        <span className="font-black text-text-primary font-mono">{formatCurrency(r.valor)}</span>
                         <Badge className="text-[8px] px-1.5 py-0.5 uppercase tracking-tighter shrink-0" variant={r.tipo === 'quitacao' ? 'success' : r.tipo === 'multa' ? 'danger' : 'neutral'}>
                           {r.tipo.replace('_', ' ')}
                         </Badge>
@@ -820,7 +821,7 @@ export default function MinhaRota() {
                     </div>
                   ))}
                 {recebimentos.filter(r => r.clienteId === selectedFolderCliente.id).length === 0 && (
-                  <p className="text-xs text-text-muted text-center py-4 bg-white/5 rounded-xl border border-dashed border-white/10">Nenhum pagamento registrado.</p>
+                  <p className="text-xs text-text-muted text-center py-4 bg-text-primary/5 rounded-xl border border-dashed border-text-primary/10">Nenhum pagamento registrado.</p>
                 )}
               </div>
             </div>

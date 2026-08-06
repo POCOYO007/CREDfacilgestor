@@ -255,7 +255,7 @@ export default function ClientesCobrador() {
             <Card 
               key={cliente.id} 
               className={`p-4 border transition-all cursor-pointer select-none ${
-                isExpanded ? "border-brand-primary" : "border-border-subtle hover:border-white/10"
+                isExpanded ? "border-brand-primary" : "border-border-subtle hover:border-text-primary/10"
               }`}
               onClick={() => toggleExpandClient(cliente.id)}
             >
@@ -286,7 +286,7 @@ export default function ClientesCobrador() {
                   <div className="grid grid-cols-2 gap-3">
                     <a 
                       href={`tel:${cliente.telefone}`} 
-                      className="p-2.5 rounded-xl bg-brand-surface-2 hover:bg-white/5 border border-border-subtle flex items-center gap-2 text-[10px] font-black text-text-secondary uppercase tracking-tight"
+                      className="p-2.5 rounded-xl bg-brand-surface-2 hover:bg-text-primary/5 border border-border-subtle flex items-center gap-2 text-[10px] font-black text-text-secondary uppercase tracking-tight"
                     >
                       <Phone size={12} className="text-brand-primary" />
                       Ligar: {formatPhone(cliente.telefone)}
@@ -365,7 +365,7 @@ export default function ClientesCobrador() {
                                   </Badge>
                                 </div>
                                 <div className="mt-1 flex gap-3 text-[10px] text-text-secondary font-bold">
-                                  <span>Principal: <strong className="font-mono text-white">{formatCurrency(total)}</strong></span>
+                                  <span>Principal: <strong className="font-mono text-text-primary">{formatCurrency(total)}</strong></span>
                                   <span>Saldo: <strong className="font-mono text-brand-primary">{formatCurrency(rest)}</strong></span>
                                 </div>
                               </div>
@@ -522,7 +522,7 @@ export default function ClientesCobrador() {
                 className={`p-2 rounded-xl text-xs font-bold border transition-all text-center ${
                   newEmprestimo.modalidade === 'tradicional'
                     ? "bg-brand-primary text-white border-brand-primary"
-                    : "bg-brand-surface-2 hover:bg-white/5 border-border-subtle text-text-secondary"
+                    : "bg-brand-surface-2 hover:bg-text-primary/5 border-border-subtle text-text-secondary"
                 }`}
                 onClick={() => setNewEmprestimo({ ...newEmprestimo, modalidade: 'tradicional' })}
               >
@@ -533,7 +533,7 @@ export default function ClientesCobrador() {
                 className={`p-2 rounded-xl text-xs font-bold border transition-all text-center ${
                   newEmprestimo.modalidade === 'parcelado'
                     ? "bg-brand-primary text-white border-brand-primary"
-                    : "bg-brand-surface-2 hover:bg-white/5 border-border-subtle text-text-secondary"
+                    : "bg-brand-surface-2 hover:bg-text-primary/5 border-border-subtle text-text-secondary"
                 }`}
                 onClick={() => setNewEmprestimo({ ...newEmprestimo, modalidade: 'parcelado' })}
               >

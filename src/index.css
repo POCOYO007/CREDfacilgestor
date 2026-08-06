@@ -21,6 +21,8 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-border-subtle: var(--border-subtle);
+  --color-overlay-subtle: var(--overlay-subtle);
+  --color-overlay-strong: var(--overlay-strong);
 }
 
 :root {
@@ -31,27 +33,36 @@
   --brand-surface: #16213E;
   --brand-surface-2: #0F3460;
   --brand-accent: #E94560;
-  
+
   --text-primary: #FFFFFF;
   --text-secondary: #A0AEC0;
   --text-muted: #718096;
-  
+
   --success: #48BB78;
   --warning: #ECC94B;
   --danger: #FC8181;
   --border-subtle: rgba(255, 255, 255, 0.08);
+  --overlay-subtle: rgba(255, 255, 255, 0.05);
+  --overlay-strong: rgba(255, 255, 255, 0.10);
 }
 
+/* Tema claro (padrão) — estilo banco digital: fundo branco/cinza muito
+   claro, cartões brancos, texto quase-preto, laranja só nos destaques. */
 [data-theme='light'] {
-  --brand-secondary: #F7FAFC;
+  --brand-secondary: #F5F6F8;
   --brand-surface: #FFFFFF;
-  --brand-surface-2: #EDF2F7;
-  
-  --text-primary: #1A202C;
-  --text-secondary: #4A5568;
-  --text-muted: #718096;
-  
-  --border-subtle: rgba(0, 0, 0, 0.08);
+  --brand-surface-2: #F1F3F6;
+
+  --text-primary: #14161A;
+  --text-secondary: #5B6472;
+  --text-muted: #8A93A3;
+
+  --success: #1DA968;
+  --warning: #D6900A;
+  --danger: #E5484D;
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --overlay-subtle: rgba(15, 23, 42, 0.035);
+  --overlay-strong: rgba(15, 23, 42, 0.07);
 }
 
 @layer base {
@@ -86,7 +97,12 @@
     background: var(--brand-surface);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border-subtle);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     @apply rounded-2xl p-6 transition-all duration-200 hover:border-brand-primary/30;
+  }
+
+  [data-theme='dark'] .bento-card {
+    box-shadow: none;
   }
 
   .btn-primary {

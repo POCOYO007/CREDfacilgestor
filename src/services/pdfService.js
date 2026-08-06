@@ -14,7 +14,7 @@ export const gerarContratoPDF = (emprestimo = {}, cliente = {}, config = {}) => 
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text(config?.nomeEmpresa || 'CredFácil', 14, 18);
+  doc.text(config?.nomeEmpresa || 'Meu Jurista Online', 14, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text(`Tel: ${config?.telefone || ''}  |  ${config?.endereco || ''}`, 14, 28);
@@ -116,7 +116,7 @@ export const gerarContratoPDF = (emprestimo = {}, cliente = {}, config = {}) => 
   // Rodapé
   doc.setFontSize(8);
   doc.setTextColor(150);
-  doc.text(`Gerado em ${new Date().toLocaleString()} - CredFácil Sistemas`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+  doc.text(`Gerado em ${new Date().toLocaleString()} - Meu Jurista Online`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
 
   // Salvar
   const finalFilename = (cliente?.nome || 'Cliente').replace(/\s+/g, '_');
@@ -133,7 +133,7 @@ export const gerarComprovante = (recebimento = {}, emprestimo = {}, cliente = {}
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text(config?.nomeEmpresa || 'CredFácil', 14, 18);
+  doc.text(config?.nomeEmpresa || 'Meu Jurista Online', 14, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text(`Tel: ${config?.telefone || ''}  |  ${config?.endereco || ''}`, 14, 28);
@@ -203,7 +203,7 @@ export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebiment
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text(config?.nomeEmpresa || 'CredFácil', 14, 18);
+  doc.text(config?.nomeEmpresa || 'Meu Jurista Online', 14, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text(`Tel: ${config?.telefone || ''}  |  ${config?.endereco || ''}`, 14, 28);
@@ -341,7 +341,7 @@ export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebiment
   doc.setFontSize(8);
   doc.setTextColor(150);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Extrato oficial gerado em ${new Date().toLocaleString()} - CredFácil Systems`, pageWidth / 2, 285, { align: 'center' });
+  doc.text(`Extrato oficial gerado em ${new Date().toLocaleString()} - Meu Jurista Online`, pageWidth / 2, 285, { align: 'center' });
 
   const safeClientName = (cliente?.nome || 'Cliente').replace(/\s+/g, '_');
   doc.save(`Extrato_${safeClientName}_${new Date().getTime()}.pdf`);

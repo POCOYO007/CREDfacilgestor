@@ -83,7 +83,7 @@ export default function Calculadora() {
           </h3>
           
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-white/5 rounded-xl border border-white/5">
+            <div className="flex justify-between items-center p-3 bg-text-primary/5 rounded-xl border border-text-primary/5">
               <span className="text-sm text-text-secondary">Valor da Parcela</span>
               <span className="text-2xl font-bold text-brand-primary font-mono">
                 {formatCurrency(resultado.valorParcela)}
@@ -91,11 +91,11 @@ export default function Calculadora() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+              <div className="p-3 bg-text-primary/5 rounded-xl border border-text-primary/5">
                 <p className="text-[10px] text-text-muted uppercase font-bold mb-1">Total a Pagar</p>
                 <p className="font-bold font-mono">{formatCurrency(resultado.totalPagar)}</p>
               </div>
-              <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+              <div className="p-3 bg-text-primary/5 rounded-xl border border-text-primary/5">
                 <p className="text-[10px] text-text-muted uppercase font-bold mb-1">Total Juros</p>
                 <p className="font-bold font-mono text-success">{formatCurrency(resultado.totalJuros)}</p>
               </div>

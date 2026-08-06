@@ -146,7 +146,7 @@ export default function ClienteDetalhe() {
     <div className="space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-4">
-          <button onClick={() => navigate('/app/clientes')} className="p-2 rounded-xl glass hover:bg-white/10 transition-colors shrink-0">
+          <button onClick={() => navigate('/app/clientes')} className="p-2 rounded-xl glass hover:bg-text-primary/10 transition-colors shrink-0">
             <ArrowLeft size={20} />
           </button>
           <div className="min-w-0">
@@ -178,21 +178,21 @@ export default function ClienteDetalhe() {
             </div>
 
             <div className="space-y-3.5">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 min-w-0">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-text-primary/5 min-w-0">
                 <Phone className="text-brand-primary shrink-0" size={18} />
                 <div className="min-w-0">
                   <p className="text-[10px] text-text-muted uppercase font-bold">Telefone</p>
                   <p className="text-xs sm:text-sm font-medium truncate">{formatPhone(cliente.telefone)}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 min-w-0">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-text-primary/5 min-w-0">
                 <MessageCircle className="text-success shrink-0" size={18} />
                 <div className="min-w-0">
                   <p className="text-[10px] text-text-muted uppercase font-bold">WhatsApp</p>
                   <p className="text-xs sm:text-sm font-medium truncate">{cliente.whatsapp || 'N/A'}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 min-w-0">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-text-primary/5 min-w-0">
                 <MapPin className="text-danger shrink-0 mt-0.5" size={18} />
                 <div className="min-w-0">
                   <p className="text-[10px] text-text-muted uppercase font-bold">Endereço</p>
@@ -202,7 +202,7 @@ export default function ClienteDetalhe() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 min-w-0">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-text-primary/5 min-w-0">
                 <Calendar className="text-text-secondary shrink-0" size={18} />
                 <div className="min-w-0">
                   <p className="text-[10px] text-text-muted uppercase font-bold">Cliente desde</p>
@@ -241,7 +241,7 @@ export default function ClienteDetalhe() {
                       <p className="text-lg sm:text-xl font-bold font-mono truncate">{formatCurrency(emp.valorPrincipal)}</p>
                     </div>
                   </div>
-                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto gap-2 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0 shrink-0">
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto gap-2 border-t sm:border-t-0 border-text-primary/5 pt-3 sm:pt-0 shrink-0">
                     <p className="text-[11px] sm:text-xs text-text-muted order-last sm:order-first">Vence em {formatDate(emp.dataVencimento)}</p>
                     <div className="flex items-center gap-2">
                       <button 
@@ -325,7 +325,7 @@ export default function ClienteDetalhe() {
                 className={`p-2.5 rounded-xl text-xs font-bold border transition-all text-center ${
                   newEmprestimo.modalidade === 'tradicional'
                     ? "bg-brand-primary text-white border-brand-primary font-black"
-                    : "bg-brand-surface-2 hover:bg-white/5 border-border-subtle text-text-secondary"
+                    : "bg-brand-surface-2 hover:bg-text-primary/5 border-border-subtle text-text-secondary"
                 }`}
                 onClick={() => setNewEmprestimo({ ...newEmprestimo, modalidade: 'tradicional' })}
               >
@@ -336,7 +336,7 @@ export default function ClienteDetalhe() {
                 className={`p-2.5 rounded-xl text-xs font-bold border transition-all text-center ${
                   newEmprestimo.modalidade === 'parcelado'
                     ? "bg-brand-primary text-white border-brand-primary font-black"
-                    : "bg-brand-surface-2 hover:bg-white/5 border-border-subtle text-text-secondary"
+                    : "bg-brand-surface-2 hover:bg-text-primary/5 border-border-subtle text-text-secondary"
                 }`}
                 onClick={() => setNewEmprestimo({ ...newEmprestimo, modalidade: 'parcelado' })}
               >

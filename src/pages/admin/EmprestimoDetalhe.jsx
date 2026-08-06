@@ -284,7 +284,7 @@ export default function EmprestimoDetalhe() {
     <div className="space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-xl glass hover:bg-white/10 transition-colors shrink-0">
+          <button onClick={() => navigate(-1)} className="p-2 rounded-xl glass hover:bg-text-primary/10 transition-colors shrink-0">
             <ArrowLeft size={20} />
           </button>
           <div className="min-w-0">
@@ -334,11 +334,11 @@ export default function EmprestimoDetalhe() {
               <div className="mt-6 pt-4 border-t border-border-subtle flex justify-between items-center gap-2">
                 <div className="flex items-center gap-1.5 text-text-secondary min-w-0">
                   <Clock size={14} className="shrink-0" />
-                  <span className="text-xs truncate">Venc: <strong className="text-white">{formatDate(emp.dataVencimento)}</strong></span>
+                  <span className="text-xs truncate">Venc: <strong className="text-text-primary">{formatDate(emp.dataVencimento)}</strong></span>
                   <button
                     type="button"
                     onClick={handleOpenEditDueDateModal}
-                    className="p-1 rounded-md bg-white/5 hover:bg-white/10 text-amber-400 transition-colors shrink-0"
+                    className="p-1 rounded-md bg-text-primary/5 hover:bg-text-primary/10 text-amber-400 transition-colors shrink-0"
                     title="Editar Data de Vencimento"
                   >
                     <Pencil size={12} />
@@ -395,7 +395,7 @@ export default function EmprestimoDetalhe() {
                   <span className="text-xs sm:text-sm truncate">Multa Atual (Atraso)</span>
                   <span className="text-xs sm:text-sm font-mono whitespace-nowrap">{formatCurrency(calcularMulta(emp))}</span>
                 </div>
-                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-text-primary/5 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-brand-primary transition-all duration-1000" 
                     style={{ 
@@ -455,7 +455,7 @@ export default function EmprestimoDetalhe() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-text-secondary">Capital / saldo devedor:</span>
-                    <span className="font-bold font-mono text-white">{formatCurrency(quitacaoInfo.saldoDevedor)}</span>
+                    <span className="font-bold font-mono text-text-primary">{formatCurrency(quitacaoInfo.saldoDevedor)}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-text-secondary">Dias em atraso:</span>
@@ -463,19 +463,19 @@ export default function EmprestimoDetalhe() {
                   </div>
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-text-secondary">Multa fixa:</span>
-                    <span className="font-bold font-mono text-white">{formatCurrency(quitacaoInfo.multaFixaAplicada)}</span>
+                    <span className="font-bold font-mono text-text-primary">{formatCurrency(quitacaoInfo.multaFixaAplicada)}</span>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-text-secondary">Multa percentual:</span>
-                    <span className="font-bold font-mono text-white">{formatCurrency(quitacaoInfo.multaPercentualAplicada)}</span>
+                    <span className="font-bold font-mono text-text-primary">{formatCurrency(quitacaoInfo.multaPercentualAplicada)}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs sm:text-sm">
                     <span className="text-text-secondary">Juros por atraso:</span>
-                    <span className="font-bold font-mono text-white">{formatCurrency(quitacaoInfo.multaDiariaAplicada)}</span>
+                    <span className="font-bold font-mono text-text-primary">{formatCurrency(quitacaoInfo.multaDiariaAplicada)}</span>
                   </div>
-                  <div className="flex justify-between items-center text-xs sm:text-sm border-t border-white/5 pt-2">
+                  <div className="flex justify-between items-center text-xs sm:text-sm border-t border-text-primary/5 pt-2">
                     <span className="text-text-secondary font-bold">Total de encargos:</span>
                     <span className="font-bold font-mono text-danger">{formatCurrency(quitacaoInfo.totalEncargosAtraso)}</span>
                   </div>
@@ -517,7 +517,7 @@ export default function EmprestimoDetalhe() {
           )}
 
           <Card className="p-0 overflow-hidden">
-            <div className="px-4 sm:px-6 py-4 border-b border-border-subtle flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center bg-white/5">
+            <div className="px-4 sm:px-6 py-4 border-b border-border-subtle flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center bg-text-primary/5">
               <div className="flex items-center gap-2">
                 <FileText size={18} className="text-brand-primary shrink-0" />
                 <h4 className="font-bold text-sm sm:text-base">Historico de Recebimentos</h4>
@@ -534,7 +534,7 @@ export default function EmprestimoDetalhe() {
             </div>
             <div className="divide-y divide-border-subtle">
               {historico.map(rec => (
-                <div key={rec.id} className="px-4 sm:px-6 py-4 flex justify-between items-center hover:bg-white/5 transition-colors group gap-4">
+                <div key={rec.id} className="px-4 sm:px-6 py-4 flex justify-between items-center hover:bg-text-primary/5 transition-colors group gap-4">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                     <div className={cn(
                       "w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0",
@@ -553,7 +553,7 @@ export default function EmprestimoDetalhe() {
                   <div className="flex items-center gap-1 shrink-0">
                     <button 
                       onClick={() => gerarComprovante(rec, emp, cliente, cobrador, config)}
-                      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-text-muted hover:text-white transition-colors"
+                      className="p-2 rounded-lg bg-text-primary/5 hover:bg-text-primary/10 text-text-muted hover:text-text-primary transition-colors"
                       title="Baixar Comprovante"
                     >
                       <Download size={16} />
@@ -588,7 +588,7 @@ export default function EmprestimoDetalhe() {
               Dados do Cliente
             </h4>
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 transition-colors gap-2" onClick={() => navigate(`/app/clientes/${cliente.id}`)}>
+              <div className="flex justify-between items-center p-3 rounded-xl bg-text-primary/5 cursor-pointer hover:bg-text-primary/10 transition-colors gap-2" onClick={() => navigate(`/app/clientes/${cliente.id}`)}>
                 <div className="min-w-0">
                   <p className="text-xs sm:text-sm font-bold truncate">{cliente.nome}</p>
                   <p className="text-[10px] sm:text-xs text-text-muted font-mono truncate">{formatCPF(cliente.cpfCnpj)}</p>
@@ -596,7 +596,7 @@ export default function EmprestimoDetalhe() {
                 <ChevronRight size={16} className="text-text-muted shrink-0" />
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div className="p-3 rounded-xl bg-white/5 group relative min-w-0">
+                <div className="p-3 rounded-xl bg-text-primary/5 group relative min-w-0">
                   <p className="text-[9px] sm:text-[10px] text-text-muted uppercase font-bold truncate">Cobrador</p>
                   <p className="text-xs sm:text-sm font-medium truncate">{cobrador?.nome || 'N/A'}</p>
                   <button 
@@ -610,7 +610,7 @@ export default function EmprestimoDetalhe() {
                     <Pencil size={10} />
                   </button>
                 </div>
-                <div className="p-3 rounded-xl bg-white/5 min-w-0">
+                <div className="p-3 rounded-xl bg-text-primary/5 min-w-0">
                   <p className="text-[9px] sm:text-[10px] text-text-muted uppercase font-bold truncate">Taxa</p>
                   <p className="text-xs sm:text-sm font-medium truncate">{emp.taxaJuros}% ao período</p>
                 </div>

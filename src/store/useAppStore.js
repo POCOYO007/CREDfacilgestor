@@ -31,7 +31,7 @@ export const useAppStore = create((set, get) => ({
   // Auth
   usuarioAtual: null,
   tenantId: 'empresa-demo', // Fallback ou extraído do usuário
-  tema: 'dark',
+  tema: 'light',
   ready: false,
 
   // Dados
@@ -43,7 +43,7 @@ export const useAppStore = create((set, get) => ({
   pagamentosCobradores: [],
   globalTenants: [],
   config: {
-    nomeEmpresa: 'CredFácil Demo',
+    nomeEmpresa: 'Meu Jurista Online',
     telefone: '(11) 99999-9999',
     endereco: 'Rua das Finanças, 123',
     taxaPadrao: 10,
@@ -132,7 +132,7 @@ export const useAppStore = create((set, get) => ({
       despesas: [],
       pagamentosCobradores: [],
       config: {
-        nomeEmpresa: 'CredFácil Demo',
+        nomeEmpresa: 'Meu Jurista Online',
         telefone: '(11) 99999-9999',
         endereco: 'Rua das Finanças, 123',
         taxaPadrao: 10,

@@ -215,7 +215,7 @@ export default function CobradorDashboard() {
                 "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap border shrink-0",
                 periodo === p.id
                   ? "bg-brand-primary text-white border-brand-primary shadow-sm shadow-brand-primary/30"
-                  : "bg-brand-surface border-border-subtle text-text-muted hover:text-white"
+                  : "bg-brand-surface border-border-subtle text-text-muted hover:text-text-primary"
               )}
             >
               {p.label}
@@ -228,14 +228,14 @@ export default function CobradorDashboard() {
               type="date"
               value={customInicio}
               onChange={e => setCustomInicio(e.target.value)}
-              className="flex-1 bg-brand-surface-2 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-hidden focus:border-brand-primary"
+              className="flex-1 bg-brand-surface-2 border border-border-subtle rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-hidden focus:border-brand-primary"
             />
             <span className="text-text-muted text-[10px] shrink-0">até</span>
             <input
               type="date"
               value={customFim}
               onChange={e => setCustomFim(e.target.value)}
-              className="flex-1 bg-brand-surface-2 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white focus:outline-hidden focus:border-brand-primary"
+              className="flex-1 bg-brand-surface-2 border border-border-subtle rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-hidden focus:border-brand-primary"
             />
           </div>
         )}
@@ -247,9 +247,9 @@ export default function CobradorDashboard() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="relative overflow-hidden bg-linear-to-br from-[#1A1C1E] to-[#121416] border border-white/5 text-white p-6 shadow-2xl shadow-black/50 ring-1 ring-white/10">
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-primary/20 rounded-full blur-3xl" />
-          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-brand-primary/10 rounded-full blur-3xl opacity-50" />
+        <Card className="relative overflow-hidden bg-linear-to-br from-brand-primary to-brand-primary-dark border border-white/10 text-white p-6 shadow-2xl shadow-brand-primary/30 ring-1 ring-white/10">
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/15 rounded-full blur-3xl" />
+          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-3xl opacity-50" />
           
           <div className="relative z-10">
             <div className="flex justify-between items-center mb-6">
@@ -317,7 +317,7 @@ export default function CobradorDashboard() {
                   initial={{ width: 0 }}
                   animate={{ width: `${progressoRota}%` }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="h-full bg-linear-to-r from-brand-primary to-[#FF8C42] shadow-[0_0_15px_rgba(249,115,22,0.4)]" 
+                  className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.6)]"
                 />
               </div>
               <div className="flex items-center justify-center gap-2 py-1 bg-white/5 border border-white/5 rounded-xl">
@@ -448,7 +448,7 @@ export default function CobradorDashboard() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end pt-1 border-t border-white/5 text-[10px]">
+                <div className="flex items-center justify-end pt-1 border-t border-text-primary/5 text-[10px]">
                   {cliente?.telefone ? (
                     <a
                       href={whatsappUrl}
@@ -515,7 +515,7 @@ export default function CobradorDashboard() {
                     <CheckCircle2 size={18} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-black text-white capitalize truncate">{nomeCliente}</p>
+                    <p className="text-sm font-black text-text-primary capitalize truncate">{nomeCliente}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[9px] font-black bg-brand-surface-2 px-1.5 py-0.5 rounded text-text-muted uppercase tracking-tight">
                         {r.tipo === 'multa' ? 'MULTA' : r.tipo === 'quitação' ? 'QUITAÇÃO' : r.tipo === 'somente_juros' ? 'JUROS' : 'PARCELA'}

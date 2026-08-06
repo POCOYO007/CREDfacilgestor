@@ -69,31 +69,31 @@ export default function Emprestimos() {
 
         <Card className="sm:col-span-1.5 p-3 sm:p-4 flex items-center">
           <Filter className="text-brand-primary mr-2 shrink-0" size={18} />
-          <select 
-            className="w-full bg-[#181b22] text-white border-none focus:outline-hidden text-xs sm:text-sm cursor-pointer font-bold"
-            style={{ backgroundColor: '#181b22', color: '#ffffff' }}
+          <select
+            className="w-full bg-brand-surface-2 text-text-primary border-none focus:outline-hidden text-xs sm:text-sm cursor-pointer font-bold"
+            style={{ backgroundColor: 'var(--brand-surface-2)', color: 'var(--text-primary)' }}
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
           >
-            <option value="todos" className="bg-[#181b22] text-white">Todos Status</option>
-            <option value="ativo" className="bg-[#181b22] text-white">🟢 Em Dia (Ativos)</option>
-            <option value="atrasado" className="bg-[#181b22] text-white">🔴 Atrasados</option>
-            <option value="pago" className="bg-[#181b22] text-white">⚪ Quitados</option>
+            <option value="todos" className="bg-brand-surface-2 text-text-primary">Todos Status</option>
+            <option value="ativo" className="bg-brand-surface-2 text-text-primary">🟢 Em Dia (Ativos)</option>
+            <option value="atrasado" className="bg-brand-surface-2 text-text-primary">🔴 Atrasados</option>
+            <option value="pago" className="bg-brand-surface-2 text-text-primary">⚪ Quitados</option>
           </select>
         </Card>
 
         <Card className="sm:col-span-1.5 p-3 sm:p-4 flex items-center">
           <ArrowUpDown className="text-brand-primary mr-2 shrink-0" size={18} />
-          <select 
-            className="w-full bg-[#181b22] text-white border-none focus:outline-hidden text-xs sm:text-sm cursor-pointer font-bold"
-            style={{ backgroundColor: '#181b22', color: '#ffffff' }}
+          <select
+            className="w-full bg-brand-surface-2 text-text-primary border-none focus:outline-hidden text-xs sm:text-sm cursor-pointer font-bold"
+            style={{ backgroundColor: 'var(--brand-surface-2)', color: 'var(--text-primary)' }}
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
           >
-            <option value="vencimento" className="bg-[#181b22] text-white">📅 Vencimento</option>
-            <option value="nome" className="bg-[#181b22] text-white">🔤 Nome (A-Z)</option>
-            <option value="atrasado" className="bg-[#181b22] text-white">⚠️ Mais Atrasados</option>
-            <option value="valor" className="bg-[#181b22] text-white">💰 Maior Valor</option>
+            <option value="vencimento" className="bg-brand-surface-2 text-text-primary">📅 Vencimento</option>
+            <option value="nome" className="bg-brand-surface-2 text-text-primary">🔤 Nome (A-Z)</option>
+            <option value="atrasado" className="bg-brand-surface-2 text-text-primary">⚠️ Mais Atrasados</option>
+            <option value="valor" className="bg-brand-surface-2 text-text-primary">💰 Maior Valor</option>
           </select>
         </Card>
       </div>
@@ -123,12 +123,12 @@ export default function Emprestimos() {
                   </div>
                 </div>
 
-                <div className="flex flex-row sm:flex-col justify-between items-center sm:items-start w-full sm:w-auto gap-1 border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
+                <div className="flex flex-row sm:flex-col justify-between items-center sm:items-start w-full sm:w-auto gap-1 border-t sm:border-t-0 border-text-primary/5 pt-2 sm:pt-0">
                   <p className="text-[10px] text-text-muted uppercase font-bold">Valor Principal</p>
-                  <p className="font-bold font-mono text-base sm:text-lg text-white">{formatCurrency(emp.valorPrincipal)}</p>
+                  <p className="font-bold font-mono text-base sm:text-lg text-text-primary">{formatCurrency(emp.valorPrincipal)}</p>
                 </div>
 
-                <div className="flex flex-row sm:flex-col justify-between items-center sm:items-start w-full sm:w-auto gap-1 border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
+                <div className="flex flex-row sm:flex-col justify-between items-center sm:items-start w-full sm:w-auto gap-1 border-t sm:border-t-0 border-text-primary/5 pt-2 sm:pt-0">
                   <p className="text-[10px] text-text-muted uppercase font-bold">Próximo Vencimento</p>
                   <div className="flex items-center gap-2">
                     <Calendar size={13} className="text-text-muted shrink-0" />
@@ -136,7 +136,7 @@ export default function Emprestimos() {
                   </div>
                 </div>
 
-                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto gap-2 sm:gap-1 border-t sm:border-t-0 border-white/5 pt-2 sm:pt-0">
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto gap-2 sm:gap-1 border-t sm:border-t-0 border-text-primary/5 pt-2 sm:pt-0">
                   <div className="text-right sm:block hidden min-w-0">
                     <p className="text-[10px] text-text-muted uppercase font-bold">Saldo Devedor</p>
                     <p className="font-bold font-mono text-brand-primary truncate">{formatCurrency(emp.saldoDevedor)}</p>
@@ -174,7 +174,7 @@ export default function Emprestimos() {
                 </div>
               </div>
               
-              <div className="h-1 bg-white/5 w-full">
+              <div className="h-1 bg-text-primary/5 w-full">
                 <div 
                   className={cn(
                     "h-full transition-all duration-500",

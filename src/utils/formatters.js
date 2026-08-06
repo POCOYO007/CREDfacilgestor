@@ -161,7 +161,7 @@ export const buildJurosVencendoHojeMessage = (cliente, emprestimo, config) => {
   const nomeCliente = cliente?.nome || 'Cliente';
   const valor = emprestimo?.valorParcela || 0;
   const data = formatDate(emprestimo?.dataVencimento);
-  const nomeEmpresa = config?.global?.nomeEmpresa || config?.nomeEmpresa || 'CredFácil';
+  const nomeEmpresa = config?.global?.nomeEmpresa || config?.nomeEmpresa || 'Meu Jurista Online';
 
   return `Olá, ${nomeCliente}! Tudo bem?
 
@@ -178,7 +178,7 @@ ${nomeEmpresa}`;
 
 export const buildExtratoQuitacaoMessage = (cliente, quitacaoInfo, config) => {
   const nomeCliente = cliente?.nome || 'Cliente';
-  const nomeEmpresa = config?.global?.nomeEmpresa || config?.nomeEmpresa || 'CredFácil';
+  const nomeEmpresa = config?.global?.nomeEmpresa || config?.nomeEmpresa || 'Meu Jurista Online';
 
   return `Olá, ${nomeCliente}! Tudo bem?
 

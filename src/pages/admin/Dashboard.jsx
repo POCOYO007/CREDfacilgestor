@@ -393,7 +393,7 @@ export default function Dashboard() {
           <p className="text-xs sm:text-sm text-text-secondary">Visão financeira completa e controle de contratos.</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 rounded-xl glass border border-white/5 flex flex-col min-w-44 bg-white/2">
+          <div className="px-4 py-2 rounded-xl glass border border-text-primary/5 flex flex-col min-w-44 bg-text-primary/2">
             <span className="text-[10px] text-text-muted uppercase font-bold">Lucro Líquido (Período)</span>
             <span className={cn("text-base sm:text-lg font-bold font-mono truncate", lucroLiquidoPeriodo >= 0 ? "text-success" : "text-danger")}>
               {formatCurrency(lucroLiquidoPeriodo)}
@@ -403,7 +403,7 @@ export default function Dashboard() {
       </div>
 
       {/* Filtros de Período Premium */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-4 rounded-2xl glass border border-white/5 bg-white/2 animate-fadeIn">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-4 rounded-2xl glass border border-text-primary/5 bg-text-primary/2 animate-fadeIn">
         <div className="flex flex-wrap items-center gap-2">
           {[
             { id: 'hoje', label: 'Hoje' },
@@ -431,7 +431,7 @@ export default function Dashboard() {
                 type="date"
                 value={customStart}
                 onChange={(e) => setCustomStart(e.target.value)}
-                className="bg-brand-surface border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                className="bg-brand-surface border border-text-primary/10 rounded-xl px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-brand-primary"
                 id="filter-date-start"
               />
             </div>
@@ -441,7 +441,7 @@ export default function Dashboard() {
                 type="date"
                 value={customEnd}
                 onChange={(e) => setCustomEnd(e.target.value)}
-                className="bg-brand-surface border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-primary"
+                className="bg-brand-surface border border-text-primary/10 rounded-xl px-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-brand-primary"
                 id="filter-date-end"
               />
             </div>
@@ -461,14 +461,14 @@ export default function Dashboard() {
             <p className="text-text-secondary font-medium uppercase tracking-wider text-[9px]">Total Coletado</p>
             <h3 className="text-xl sm:text-2xl font-bold mt-1 font-mono text-success truncate">{formatCurrency(totalColetadoPeriodo)}</h3>
           </div>
-          <div className="flex justify-between items-center mt-3 pt-2 border-t border-white/5 gap-2">
+          <div className="flex justify-between items-center mt-3 pt-2 border-t border-text-primary/5 gap-2">
             <div className="min-w-0">
               <p className="text-[8px] text-text-muted uppercase truncate">Multas</p>
               <p className="text-xs font-bold font-mono text-success truncate">{formatCurrency(multasColetadasPeriodo)}</p>
             </div>
             <div className="text-right min-w-0">
               <p className="text-[8px] text-text-muted uppercase truncate">Regulares</p>
-              <p className="text-xs font-bold font-mono text-white truncate">{formatCurrency(Math.max(0, totalColetadoPeriodo - multasColetadasPeriodo))}</p>
+              <p className="text-xs font-bold font-mono text-text-primary truncate">{formatCurrency(Math.max(0, totalColetadoPeriodo - multasColetadasPeriodo))}</p>
             </div>
           </div>
         </Card>
@@ -482,7 +482,7 @@ export default function Dashboard() {
             <p className="text-text-secondary font-medium uppercase tracking-wider text-[9px]">Despesas Aprovadas</p>
             <h3 className="text-xl sm:text-2xl font-bold mt-1 font-mono text-danger truncate">{formatCurrency(despesasAprovadasPeriodo)}</h3>
           </div>
-          <div className="mt-3 pt-2 border-t border-white/5">
+          <div className="mt-3 pt-2 border-t border-text-primary/5">
             <p className="text-[8px] text-text-muted uppercase truncate">Apenas custos aprovados</p>
           </div>
         </Card>
@@ -496,7 +496,7 @@ export default function Dashboard() {
             <p className="text-text-secondary font-medium uppercase tracking-wider text-[9px]">Repasses Cobradores</p>
             <h3 className="text-xl sm:text-2xl font-bold mt-1 font-mono text-brand-primary truncate">{formatCurrency(pagamentosCobradoresPeriodo)}</h3>
           </div>
-          <div className="mt-3 pt-2 border-t border-white/5">
+          <div className="mt-3 pt-2 border-t border-text-primary/5">
             <p className="text-[8px] text-text-muted uppercase truncate">Comissões pagas no período</p>
           </div>
         </Card>
@@ -512,7 +512,7 @@ export default function Dashboard() {
               {formatCurrency(lucroLiquidoPeriodo)}
             </h3>
           </div>
-          <div className="mt-3 pt-2 border-t border-white/5">
+          <div className="mt-3 pt-2 border-t border-text-primary/5">
             <p className="text-[8px] text-text-muted uppercase truncate">Fórmula oficial do acerto</p>
           </div>
         </Card>
@@ -526,7 +526,7 @@ export default function Dashboard() {
             <p className="text-text-secondary font-medium uppercase tracking-wider text-[9px]">Capital em Rua (Atual)</p>
             <h3 className="text-xl sm:text-2xl font-bold mt-1 font-mono text-warning truncate">{formatCurrency(saldoEmRua)}</h3>
           </div>
-          <div className="flex justify-between items-center mt-3 pt-2 border-t border-white/5 gap-2">
+          <div className="flex justify-between items-center mt-3 pt-2 border-t border-text-primary/5 gap-2">
             <div className="min-w-0">
               <p className="text-[8px] text-text-muted uppercase truncate">Principal</p>
               <p className="text-xs font-bold font-mono text-warning truncate">{formatCurrency(saldoEmRua)}</p>
@@ -547,7 +547,7 @@ export default function Dashboard() {
             <p className="text-text-secondary font-medium uppercase tracking-wider text-[9px]">Projeção Mensal</p>
             <h3 className="text-xl sm:text-2xl font-bold mt-1 font-mono text-pink-400 truncate">{formatCurrency(projecaoMensal)}</h3>
           </div>
-          <div className="mt-3 pt-2 border-t border-white/5">
+          <div className="mt-3 pt-2 border-t border-text-primary/5">
             <p className="text-[8px] text-text-muted uppercase truncate">Contratos ativos este mês</p>
           </div>
         </Card>
@@ -627,7 +627,7 @@ export default function Dashboard() {
             
             {/* Clientes Coletados Hoje */}
             <Card className="p-0 overflow-hidden" id="card-tabela-coletas">
-              <div className="px-5 py-4 border-b border-border-subtle flex justify-between items-center bg-white/2">
+              <div className="px-5 py-4 border-b border-border-subtle flex justify-between items-center bg-text-primary/2">
                 <h4 className="font-bold flex items-center gap-2 text-sm">
                   <HandCoins size={18} className="text-emerald-400" />
                   Coletados Hoje
@@ -646,9 +646,9 @@ export default function Dashboard() {
                   const cobrador = cobradores.find(cb => cb.id === r.cobradorId);
                   const nomeCliente = cliente?.nome || r.clienteNome || 'Cliente Não Identificado';
                   return (
-                    <div key={r.id} className="px-5 py-3 flex justify-between items-center hover:bg-white/5 transition-colors">
+                    <div key={r.id} className="px-5 py-3 flex justify-between items-center hover:bg-text-primary/5 transition-colors">
                       <div className="min-w-0 pr-2">
-                        <p className="text-sm font-bold text-white truncate">{nomeCliente}</p>
+                        <p className="text-sm font-bold text-text-primary truncate">{nomeCliente}</p>
                         <p className="text-[10px] text-text-muted truncate">
                           Cobrador: <span className="text-text-secondary font-medium">{cobrador?.nome || 'Não inf.'}</span>
                         </p>
@@ -668,7 +668,7 @@ export default function Dashboard() {
 
             {/* Despesas Recentes */}
             <Card className="p-0 overflow-hidden" id="card-tabela-despesas">
-              <div className="px-6 py-4 border-b border-border-subtle flex justify-between items-center bg-white/2">
+              <div className="px-6 py-4 border-b border-border-subtle flex justify-between items-center bg-text-primary/2">
                 <h4 className="font-bold flex items-center gap-2 text-sm">
                   <Receipt size={18} className="text-danger" />
                   Despesas Recentes
@@ -677,7 +677,7 @@ export default function Dashboard() {
               </div>
               <div className="divide-y divide-border-subtle">
                 {despesasRecentes.map(desp => (
-                  <div key={desp.id} className="px-6 py-3 flex justify-between items-center hover:bg-white/5 transition-colors">
+                  <div key={desp.id} className="px-6 py-3 flex justify-between items-center hover:bg-text-primary/5 transition-colors">
                     <div>
                       <p className="text-sm font-bold truncate max-w-44">{desp.descricao}</p>
                       <p className="text-[10px] text-text-muted uppercase">{desp.tipo} • {formatDate(desp.criadoEm)}</p>
@@ -693,7 +693,7 @@ export default function Dashboard() {
 
             {/* Contratos Recentes */}
             <Card className="p-0 overflow-hidden" id="card-tabela-contratos">
-              <div className="px-6 py-4 border-b border-border-subtle flex justify-between items-center bg-white/2">
+              <div className="px-6 py-4 border-b border-border-subtle flex justify-between items-center bg-text-primary/2">
                 <h4 className="font-bold flex items-center gap-2 text-sm">
                   <FileText size={18} className="text-brand-primary" />
                   Novos Contratos
@@ -704,7 +704,7 @@ export default function Dashboard() {
                 {contratosRecentes.map(emp => {
                   const cliente = clientes.find(c => c.id === emp.clienteId);
                   return (
-                    <div key={emp.id} className="px-6 py-3 flex justify-between items-center hover:bg-white/5 transition-colors">
+                    <div key={emp.id} className="px-6 py-3 flex justify-between items-center hover:bg-text-primary/5 transition-colors">
                       <div>
                         <p className="text-sm font-bold truncate max-w-44">{cliente?.nome || 'N/A'}</p>
                         <p className="text-[10px] text-text-muted uppercase">{formatCurrency(emp.valorPrincipal)} • {formatDate(emp.criadoEm)}</p>
@@ -729,25 +729,25 @@ export default function Dashboard() {
               Guia Financeiro do Gestor
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-4 rounded-xl bg-white/2 border border-white/5">
+              <div className="p-4 rounded-xl bg-text-primary/2 border border-text-primary/5">
                 <p className="text-xs font-bold text-brand-primary uppercase mb-2">Lucro do Período</p>
                 <p className="text-xs text-text-secondary leading-relaxed">
                   O <strong>Lucro Líquido do Período</strong> é computado pela receita arrecadada (Total Coletado) subtraindo despesas de combustível/insumos (Despesas Aprovadas) e remunerações pagas aos cobradores (Repasses).
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-white/2 border border-white/5">
+              <div className="p-4 rounded-xl bg-text-primary/2 border border-text-primary/5">
                 <p className="text-xs font-bold text-indigo-400 uppercase mb-2">Projeção de Receita</p>
                 <p className="text-xs text-text-secondary leading-relaxed">
                   Reflete a expectativa bruta de parcelas a receber no mês corrente. É ideal para prever reinvestimentos e planejar novas alocações de capital.
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-white/2 border border-white/5">
+              <div className="p-4 rounded-xl bg-text-primary/2 border border-text-primary/5">
                 <p className="text-xs font-bold text-warning uppercase mb-2">Capital em Rua</p>
                 <p className="text-xs text-text-secondary leading-relaxed">
                   Representa o saldo principal atualmente emprestado e pendente de amortização. É a base ativa que gera a sua rentabilidade.
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-white/2 border border-white/5">
+              <div className="p-4 rounded-xl bg-text-primary/2 border border-text-primary/5">
                 <p className="text-xs font-bold text-success uppercase mb-2">Multi-Tenant Isolado</p>
                 <p className="text-xs text-text-secondary leading-relaxed">
                   Todas as transações e contratos estão isolados de forma segura sob o identificador exclusivo do Tenant autenticado na plataforma.
@@ -788,14 +788,14 @@ export default function Dashboard() {
                   const message = cliente ? buildJurosVencendoHojeMessage(cliente, e, config) : '';
                   const whatsappUrl = cliente?.telefone ? buildWhatsAppUrl(cliente.telefone, message) : null;
                   return (
-                    <div key={e.id} className="p-3 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-2 group hover:bg-white/10 transition-all">
+                    <div key={e.id} className="p-3 rounded-xl bg-text-primary/5 border border-text-primary/5 flex flex-col gap-2 group hover:bg-text-primary/10 transition-all">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center text-warning shrink-0">
                             <Clock size={14} />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-bold text-white truncate max-w-[130px]">{cliente?.nome || 'N/A'}</p>
+                            <p className="text-sm font-bold text-text-primary truncate max-w-[130px]">{cliente?.nome || 'N/A'}</p>
                             <p className="text-[10px] text-text-muted font-mono">{cliente?.telefone ? formatPhone(cliente.telefone) : 'Sem Telefone'}</p>
                           </div>
                         </div>
@@ -805,8 +805,8 @@ export default function Dashboard() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between pt-1 border-t border-white/5 text-[10px] text-text-secondary">
-                        <span className="truncate max-w-[120px]">Cobrador: <strong className="text-white">{cobrador?.nome || 'N/A'}</strong></span>
+                      <div className="flex items-center justify-between pt-1 border-t border-text-primary/5 text-[10px] text-text-secondary">
+                        <span className="truncate max-w-[120px]">Cobrador: <strong className="text-text-primary">{cobrador?.nome || 'N/A'}</strong></span>
                         {cliente?.telefone ? (
                           <a
                             href={whatsappUrl}

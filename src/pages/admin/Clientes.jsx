@@ -136,7 +136,7 @@ export default function Clientes() {
                   </div>
                 </div>
                 <div className="flex gap-1 shrink-0" onClick={e => e.stopPropagation()}>
-                  <button type="button" onClick={() => handleEdit(cliente)} className="p-1.5 text-text-muted hover:text-white transition-colors"><Edit size={16} /></button>
+                  <button type="button" onClick={() => handleEdit(cliente)} className="p-1.5 text-text-muted hover:text-text-primary transition-colors"><Edit size={16} /></button>
                   <button type="button" onClick={() => openDeleteModal(cliente)} className="p-1.5 text-text-muted hover:text-danger transition-colors"><Trash2 size={16} /></button>
                 </div>
               </div>

@@ -103,11 +103,11 @@ export default function Equipe() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-5">
-                <div className="p-3 rounded-xl bg-white/5 min-w-0">
+                <div className="p-3 rounded-xl bg-text-primary/5 min-w-0">
                   <p className="text-[10px] text-text-muted uppercase font-bold truncate">Comissão</p>
                   <p className="text-base sm:text-lg font-bold font-mono truncate">{cob.comissao}%</p>
                 </div>
-                <div className="p-3 rounded-xl bg-white/5 border border-success/20 min-w-0">
+                <div className="p-3 rounded-xl bg-text-primary/5 border border-success/20 min-w-0">
                   <p className="text-[10px] text-text-muted uppercase font-bold text-success/80 truncate">Coletado Hoje</p>
                   <p className="text-base sm:text-lg font-bold text-success font-mono truncate">{formatCurrency(coletadoHoje)}</p>
                   {multasHoje > 0 && (

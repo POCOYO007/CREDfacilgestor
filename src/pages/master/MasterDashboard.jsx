@@ -233,7 +233,7 @@ export default function MasterDashboard() {
             label="Nome da Empresa" 
             value={formData.nome} 
             onChange={e => setFormData({ ...formData, nome: e.target.value })}
-            placeholder="Ex: CredFácil Matriz"
+            placeholder="Ex: Meu Jurista Online"
           />
 
           <Input 

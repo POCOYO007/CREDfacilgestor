@@ -189,7 +189,7 @@ export default function AcertoCobrador() {
     <div className="space-y-6 sm:space-y-8">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-xl glass hover:bg-white/10 transition-colors shrink-0">
+          <button onClick={() => navigate(-1)} className="p-2 rounded-xl glass hover:bg-text-primary/10 transition-colors shrink-0">
             <ArrowLeft size={20} />
           </button>
           <div className="min-w-0">
@@ -205,7 +205,7 @@ export default function AcertoCobrador() {
                 onClick={() => setPeriodo(p)}
                 className={cn(
                   "flex-1 sm:flex-initial px-3 sm:px-4 py-1.5 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap",
-                  periodo === p ? "bg-brand-primary text-white shadow-lg" : "text-text-muted hover:text-white"
+                  periodo === p ? "bg-brand-primary text-white shadow-lg" : "text-text-muted hover:text-text-primary"
                 )}
               >
                 {p === 'personalizado' ? 'Data' : p}
@@ -238,7 +238,7 @@ export default function AcertoCobrador() {
             <p className="text-xs text-text-muted uppercase font-bold mb-1">Total Coletado</p>
             <h3 className="text-xl sm:text-2xl font-bold font-mono text-success">{formatCurrency(totalColetado)}</h3>
           </div>
-          <div className="mt-3 pt-2 border-t border-white/5 flex justify-between gap-2 min-w-0 animate-pulse">
+          <div className="mt-3 pt-2 border-t border-text-primary/5 flex justify-between gap-2 min-w-0 animate-pulse">
             <span className="text-[10px] text-text-muted uppercase truncate">Multas</span>
             <span className="text-[10px] font-bold text-success truncate">{formatCurrency(multasColetadas)}</span>
           </div>
@@ -253,7 +253,7 @@ export default function AcertoCobrador() {
         </Card>
         <Card className="p-4 sm:p-5 bg-linear-to-br from-brand-surface to-brand-surface-2 border-brand-primary/30 relative group">
           <p className="text-xs text-text-muted uppercase font-bold mb-1">Líquido a Entregar</p>
-          <h3 className="text-xl sm:text-2xl font-bold font-mono text-white mb-4">{formatCurrency(aEntregar)}</h3>
+          <h3 className="text-xl sm:text-2xl font-bold font-mono text-text-primary mb-4">{formatCurrency(aEntregar)}</h3>
           {Math.abs(aEntregar) > 0.01 && (
             <Button 
               size="sm" 
@@ -281,7 +281,7 @@ export default function AcertoCobrador() {
           <div className="flex items-center gap-2.5">
             <Calendar className="text-amber-400 shrink-0" size={18} />
             <div>
-              <p className="font-bold text-white">Lançamentos fora do filtro de {periodo === 'hoje' ? 'Hoje' : periodo === 'semana' ? 'Semana' : periodo === 'mes' ? 'Mês' : 'Data'}</p>
+              <p className="font-bold text-text-primary">Lançamentos fora do filtro de {periodo === 'hoje' ? 'Hoje' : periodo === 'semana' ? 'Semana' : periodo === 'mes' ? 'Mês' : 'Data'}</p>
               <p className="text-amber-200/70 mt-0.5">
                 Existem {despsForaDoFiltro.length} despesa(s) e {recsForaDoFiltro.length} recebimento(s) deste cobrador fora do período selecionado.
               </p>
@@ -299,7 +299,7 @@ export default function AcertoCobrador() {
             {periodo !== 'mes' && (
               <button 
                 onClick={() => setPeriodo('mes')} 
-                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white rounded-lg text-xs font-bold transition-colors uppercase cursor-pointer"
+                className="px-3 py-1.5 bg-text-primary/5 hover:bg-text-primary/10 text-text-primary rounded-lg text-xs font-bold transition-colors uppercase cursor-pointer"
               >
                 Ver Mês
               </button>
@@ -313,7 +313,7 @@ export default function AcertoCobrador() {
           <div className="px-4 sm:px-6 py-4 border-b border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-brand-surface-2/30">
             <div className="flex items-center gap-2">
               <HandCoins size={18} className="text-brand-primary shrink-0" />
-              <h4 className="font-bold text-sm sm:text-base text-white">Recebimentos do Período ({recs.length})</h4>
+              <h4 className="font-bold text-sm sm:text-base text-text-primary">Recebimentos do Período ({recs.length})</h4>
             </div>
             <div className="relative w-full sm:w-48">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted" size={14} />
@@ -338,11 +338,11 @@ export default function AcertoCobrador() {
               .map(r => {
                 const info = getClienteInfo(r);
                 return (
-                  <div key={r.id} className="px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
+                  <div key={r.id} className="px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 hover:bg-text-primary/[0.02] transition-colors">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <User size={15} className="text-brand-primary shrink-0" />
-                        <p className="text-sm font-black text-white truncate">{info.nome}</p>
+                        <p className="text-sm font-black text-text-primary truncate">{info.nome}</p>
                       </div>
                       <p className="text-xs text-text-muted truncate mt-0.5 flex items-center gap-2">
                         <span>{formatDate(r.dataRecebimento)}</span>
@@ -382,11 +382,11 @@ export default function AcertoCobrador() {
             {desps.map(d => (
               <div key={d.id} className="px-4 sm:px-6 py-3.5 flex justify-between items-center gap-2">
                 <div className="flex gap-3 min-w-0">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted shrink-0">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-text-primary/5 flex items-center justify-center text-text-muted shrink-0">
                     {d.tipo === 'combustivel' ? <Fuel size={18} /> : d.tipo === 'alimentacao' ? <Utensils size={18} /> : d.tipo === 'mecanica' ? <Wrench size={18} /> : <MoreHorizontal size={18} />}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold font-mono text-white">{formatCurrency(d.valor)}</p>
+                    <p className="text-sm font-bold font-mono text-text-primary">{formatCurrency(d.valor)}</p>
                     <p className="text-xs text-text-muted truncate">{d.descricao} • {formatDate(d.data)}</p>
                   </div>
                 </div>
@@ -485,10 +485,10 @@ export default function AcertoCobrador() {
                 {recs.map(r => {
                   const info = getClienteInfo(r);
                   return (
-                    <div key={r.id} className="p-2.5 flex justify-between items-center text-xs hover:bg-white/5 transition-colors rounded-lg">
+                    <div key={r.id} className="p-2.5 flex justify-between items-center text-xs hover:bg-text-primary/5 transition-colors rounded-lg">
                       <div className="min-w-0 flex items-center gap-2">
                         <User size={14} className="text-brand-primary shrink-0" />
-                        <span className="font-bold text-white truncate">{info.nome}</span>
+                        <span className="font-bold text-text-primary truncate">{info.nome}</span>
                       </div>
                       <span className="font-mono font-bold text-emerald-400 shrink-0">{formatCurrency(r.valor)}</span>
                     </div>

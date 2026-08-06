@@ -1,18 +1,19 @@
 import React, { useEffect } from 'react';
 import { Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
-import { 
-  LayoutDashboard, 
-  Users, 
-  HandCoins, 
-  UsersRound, 
-  Settings, 
-  LogOut, 
-  Menu, 
+import {
+  LayoutDashboard,
+  Users,
+  HandCoins,
+  UsersRound,
+  Settings,
+  LogOut,
+  Menu,
   X,
   ChevronRight,
   Sun,
-  Moon
+  Moon,
+  Scale
 } from 'lucide-react';
 import { cn } from '../ui';
 
@@ -55,9 +56,9 @@ export function AdminLayout() {
       )}>
         <div className="p-6 flex items-center gap-3 overflow-hidden whitespace-nowrap">
           <div className="w-10 h-10 shrink-0 rounded-xl bg-linear-to-br from-brand-primary to-[#FF8C42] flex items-center justify-center shadow-lg shadow-brand-primary/20">
-            <HandCoins className="text-white w-6 h-6" />
+            <Scale className="text-white w-5 h-5" />
           </div>
-          <span className="font-bold text-xl tracking-tight">{config.nomeEmpresa}</span>
+          <span className="font-bold text-xl tracking-tight truncate">{config.nomeEmpresa}</span>
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden">
@@ -67,7 +68,7 @@ export function AdminLayout() {
               onClick={() => navigate(item.path)}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group whitespace-nowrap",
-                window.location.pathname === item.path 
+                window.location.pathname === item.path
                   ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/20" 
                   : "text-text-secondary hover:bg-brand-surface-2 hover:text-text-primary"
               )}
@@ -141,6 +142,7 @@ export function CobradorLayout() {
   const tema = useAppStore(state => state.tema);
   const toggleTema = useAppStore(state => state.toggleTema);
   const usuarioAtual = useAppStore(state => state.usuarioAtual);
+  const config = useAppStore(state => state.config);
   const navigate = useNavigate();
 
   const menuItems = [
@@ -159,9 +161,9 @@ export function CobradorLayout() {
       )}>
         <div className="p-6 flex items-center gap-3 overflow-hidden whitespace-nowrap">
           <div className="w-10 h-10 shrink-0 rounded-xl bg-linear-to-br from-brand-primary to-[#FF8C42] flex items-center justify-center shadow-lg shadow-brand-primary/20">
-            <HandCoins className="text-white w-6 h-6" />
+            <Scale className="text-white w-5 h-5" />
           </div>
-          <span className="font-bold text-xl tracking-tight">CredFácil</span>
+          <span className="font-bold text-xl tracking-tight truncate">{config.nomeEmpresa}</span>
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden">

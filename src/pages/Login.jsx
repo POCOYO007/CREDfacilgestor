@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { collectionGroup, query, where, limit, getDocs } from 'firebase/firestore';
 import { Button, Input, Card } from '../components/ui';
-import { HandCoins, Lock, User, Loader2, Sun, Moon, Github } from 'lucide-react';
+import { Scale, Lock, User, Loader2, Sun, Moon, Github } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { hashSenha } from '../utils/crypto';
 
@@ -107,12 +107,12 @@ export default function Login() {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-primary/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-accent/10 blur-[120px] rounded-full" />
 
-      <Card className="w-full max-w-md p-10 relative z-10 shadow-2xl border-white/5">
+      <Card className="w-full max-w-md p-10 relative z-10 shadow-2xl">
         <div className="flex flex-col items-center mb-10">
           <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-brand-primary to-[#FF8C42] flex items-center justify-center shadow-2xl shadow-brand-primary/30 mb-6 transform hover:rotate-6 transition-transform duration-300">
-            <HandCoins className="text-white w-12 h-12" />
+            <Scale className="text-white w-11 h-11" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tighter text-text-primary">CredFácil</h1>
+          <h1 className="text-3xl font-bold tracking-tighter text-text-primary text-center leading-tight">Meu Jurista Online</h1>
           <p className="text-text-secondary mt-3 font-medium">Gestão inteligente de crédito</p>
         </div>
 
@@ -167,7 +167,7 @@ export default function Login() {
 
         <div className="mt-8 pt-6 border-t border-border-subtle text-center">
           <p className="text-xs text-text-muted">
-            © 2026 CredFácil Sistemas. Todos os direitos reservados.
+            © 2026 Meu Jurista Online. Todos os direitos reservados.
           </p>
         </div>
       </Card>

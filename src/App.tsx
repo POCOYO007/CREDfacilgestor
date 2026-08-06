@@ -191,7 +191,7 @@ export default function App() {
         <div className="w-16 h-16 rounded-2xl bg-brand-primary flex items-center justify-center shadow-xl animate-bounce mb-4">
           <Loader2 className="text-white w-10 h-10 animate-spin" />
         </div>
-        <p className="text-text-muted animate-pulse font-medium">Iniciando CredFácil...</p>
+        <p className="text-text-muted animate-pulse font-medium">Iniciando Meu Jurista Online...</p>
       </div>
     );
   }
