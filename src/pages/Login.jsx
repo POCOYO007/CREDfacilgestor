@@ -123,6 +123,7 @@ export default function Login() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             icon={<User size={20} className="text-brand-primary/60" />}
+            inputClassName="h-14"
             required
           />
           <Input
@@ -132,6 +133,7 @@ export default function Login() {
             value={senha}
             onChange={e => setSenha(e.target.value)}
             icon={<Lock size={20} className="text-brand-primary/60" />}
+            inputClassName="h-14"
             required
           />
 
