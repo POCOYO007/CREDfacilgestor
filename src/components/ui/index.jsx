@@ -39,7 +39,7 @@ export function Input({ label, error, icon, className, inputClassName, ...props 
       {label && <label className="text-sm font-medium text-text-secondary">{label}</label>}
       <div className="relative flex items-center">
         {icon && (
-          <div className="absolute left-3 text-text-muted">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center text-text-muted">
             {icon}
           </div>
         )}
