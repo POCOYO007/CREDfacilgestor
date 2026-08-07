@@ -33,8 +33,13 @@ export default defineConfig(({mode}) => {
         workbox: {
           // Só faz cache do app shell (JS/CSS/HTML/ícones/fontes). O
           // Firestore usa WebSocket/long-polling e já tem seu próprio cache
-          // offline — não interceptamos essas chamadas aqui.
+          // offline — não interceptamos essas chamadas aqui. O Service
+          // Worker só controla fetches da própria origem (meujurista.online)
+          // — nunca alcança auth.meujurista.online nem accounts.google.com.
           globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
         },
       }),
     ],

@@ -5,6 +5,7 @@ import { auth, db } from '../lib/firebase';
 import {
   signInWithEmailAndPassword,
   signInWithRedirect,
+  signInWithPopup,
   getRedirectResult,
   GoogleAuthProvider
 } from 'firebase/auth';
@@ -39,19 +40,31 @@ export default function Login() {
     let cancelled = false;
     (async () => {
       try {
+        console.log('[auth] verificando getRedirectResult()...');
         const result = await getRedirectResult(auth);
+        console.log('[auth] getRedirectResult retornou:', result ? result.user?.email : null);
         if (result && !cancelled) {
           toast.success('Bem-vindo!');
         }
       } catch (error) {
         if (!cancelled) {
-          console.error(error);
+          console.error('[auth] erro no getRedirectResult:', error);
           toast.error(`Erro ao entrar com Google: ${error.code || error.message}`);
         }
       }
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // App instalado (ícone na tela de início) roda em modo standalone. Nesse
+  // modo, signInWithRedirect ejeta a navegação pro navegador comum e o
+  // ícone nunca recebe o resultado de volta — por isso usamos popup aqui,
+  // que abre uma aba vinculada ao próprio app e preserva essa ligação. Em
+  // aba de navegador normal continuamos com redirect (popup falha no
+  // Safari/Chrome mobile por particionamento de sessionStorage).
+  const isStandalonePWA = () =>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -103,18 +116,23 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
+    const provider = new GoogleAuthProvider();
     try {
-      // Redirect em vez de popup: no mobile (Safari/Chrome iOS em particular)
-      // o popup falha com "missing initial state" porque o navegador
-      // particiona o sessionStorage entre a janela principal e o popup. O
-      // redirect usa navegação de página inteira e não sofre disso.
-      const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
-      // A página navega pro Google aqui — o resultado é tratado no useEffect
-      // com getRedirectResult() quando o usuário voltar.
+      if (isStandalonePWA()) {
+        console.log('[auth] modo standalone (PWA instalado) — usando signInWithPopup');
+        const result = await signInWithPopup(auth, provider);
+        console.log('[auth] signInWithPopup resolveu:', result?.user?.email);
+        toast.success('Bem-vindo!');
+      } else {
+        console.log('[auth] navegador normal — usando signInWithRedirect');
+        await signInWithRedirect(auth, provider);
+        // A página navega pro Google aqui — o resultado é tratado no
+        // useEffect com getRedirectResult() quando o usuário voltar.
+      }
     } catch (error) {
-      console.error(error);
+      console.error('[auth] erro no login com Google:', error);
       toast.error(`Erro ao entrar com Google: ${error.code || error.message}`);
+    } finally {
       setLoading(false);
     }
   };
