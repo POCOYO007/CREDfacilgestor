@@ -56,12 +56,6 @@ export default function Login() {
     return () => { cancelled = true; };
   }, []);
 
-  // App instalado (ícone na tela de início) roda em modo standalone. Nesse
-  // modo, signInWithRedirect ejeta a navegação pro navegador comum e o
-  // ícone nunca recebe o resultado de volta — por isso usamos popup aqui,
-  // que abre uma aba vinculada ao próprio app e preserva essa ligação. Em
-  // aba de navegador normal continuamos com redirect (popup falha no
-  // Safari/Chrome mobile por particionamento de sessionStorage).
   const isStandalonePWA = () =>
     window.matchMedia('(display-mode: standalone)').matches ||
     window.navigator.standalone === true;
@@ -114,24 +108,42 @@ export default function Login() {
     }
   };
 
+  // O bug original do popup no Safari mobile ("missing initial state") era
+  // causado pelo authDomain antigo (*.firebaseapp.com) sendo tratado como
+  // site terceiro. Com auth.meujurista.online (mesmo site), o popup passa a
+  // funcionar em navegador normal e é obrigatório no app instalado (nesse
+  // modo o redirect de página inteira ejeta o usuário pro navegador comum e
+  // o app nunca recebe o resultado de volta). Por isso usamos popup como
+  // padrão em todo lugar, com redirect só como fallback se o navegador
+  // bloquear a abertura do popup.
   const handleGoogleLogin = async () => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      if (isStandalonePWA()) {
-        console.log('[auth] modo standalone (PWA instalado) — usando signInWithPopup');
-        const result = await signInWithPopup(auth, provider);
-        console.log('[auth] signInWithPopup resolveu:', result?.user?.email);
-        toast.success('Bem-vindo!');
-      } else {
-        console.log('[auth] navegador normal — usando signInWithRedirect');
-        await signInWithRedirect(auth, provider);
-        // A página navega pro Google aqui — o resultado é tratado no
-        // useEffect com getRedirectResult() quando o usuário voltar.
-      }
+      console.log('[auth] tentando signInWithPopup (standalone:', isStandalonePWA(), ')');
+      const result = await signInWithPopup(auth, provider);
+      console.log('[auth] signInWithPopup resolveu:', result?.user?.email);
+      toast.success('Bem-vindo!');
     } catch (error) {
-      console.error('[auth] erro no login com Google:', error);
-      toast.error(`Erro ao entrar com Google: ${error.code || error.message}`);
+      // Só caímos pro redirect quando o mecanismo do popup em si falhou
+      // (bloqueado pelo navegador ou storage indisponível) — não quando o
+      // usuário simplesmente fechou/cancelou de propósito.
+      const popupIndisponivel = ['auth/popup-blocked', 'auth/missing-initial-state', 'auth/web-storage-unsupported', 'auth/operation-not-supported-in-this-environment'].includes(error.code);
+      if (popupIndisponivel && !isStandalonePWA()) {
+        console.warn('[auth] popup bloqueado/cancelado, tentando signInWithRedirect como fallback:', error.code);
+        try {
+          await signInWithRedirect(auth, provider);
+          // A página navega pro Google aqui — o resultado é tratado no
+          // useEffect com getRedirectResult() quando o usuário voltar.
+          return;
+        } catch (redirectError) {
+          console.error('[auth] erro no fallback signInWithRedirect:', redirectError);
+          toast.error(`Erro ao entrar com Google: ${redirectError.code || redirectError.message}`);
+        }
+      } else {
+        console.error('[auth] erro no login com Google:', error);
+        toast.error(`Erro ao entrar com Google: ${error.code || error.message}`);
+      }
     } finally {
       setLoading(false);
     }
