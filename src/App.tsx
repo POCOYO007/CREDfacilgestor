@@ -72,7 +72,8 @@ export default function App() {
           // limit(1) é exigido pelas firestore.rules para permitir essa busca
           // cross-tenant (o cliente ainda não sabe o tenantId neste ponto).
           try {
-            const qTenant = query(collection(db, 'tenants'), where('adminEmail', '==', fbUser.email), limit(1));
+            const emailNormalizado = fbUser.email?.trim().toLowerCase();
+            const qTenant = query(collection(db, 'tenants'), where('adminEmail', '==', emailNormalizado), limit(1));
             const snapshotTenant = await getDocs(qTenant);
             
             if (!snapshotTenant.empty) {

@@ -60,11 +60,16 @@ export default function MasterDashboard() {
 
     setLoading(true);
     try {
+      // adminEmail precisa bater exatamente (case-sensitive) com o e-mail da
+      // conta Google no login — normalizamos aqui pra evitar que uma letra
+      // maiúscula ou espaço extra deixe o admin sem enxergar os dados do
+      // próprio tenant.
+      const dataToSave = { ...formData, adminEmail: formData.adminEmail.trim().toLowerCase() };
       if (selectedTenant) {
-        await editarTenant(selectedTenant.id, formData);
+        await editarTenant(selectedTenant.id, dataToSave);
         toast.success('Assinatura atualizada com sucesso');
       } else {
-        await adicionarTenant(formData.id, formData);
+        await adicionarTenant(formData.id, dataToSave);
         toast.success('Tenant criado com sucesso');
       }
       setModalOpen(false);
