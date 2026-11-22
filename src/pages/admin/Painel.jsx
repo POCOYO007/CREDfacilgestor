@@ -4,7 +4,8 @@ import toast from 'react-hot-toast';
 import { AlertTriangle, CalendarClock, Wallet, TrendingUp, ChevronRight, Check, X, FileText, Receipt } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { useContratos, ordemDeCobranca } from '../../hooks/useCarteira';
-import { conferenciaDoDia, dataDaDespesa } from '../../domain/conferencia';
+import { conferenciaDoPeriodo, dataDaDespesa } from '../../domain/conferencia';
+import PeriodoFiltro, { usePeriodo } from '../../components/PeriodoFiltro';
 import { parseData, num, round2, pertenceAoCobrador } from '../../domain/emprestimo';
 import { Card, Stat, SectionTitle, Badge, Empty, Button, cn } from '../../components/ui';
 import ContratoCard from '../../components/ContratoCard';
@@ -21,8 +22,10 @@ export default function Painel() {
   const config = useAppStore((s) => s.config);
   const contratos = useContratos();
 
-  const hoje = new Date();
-  const conf = useMemo(() => conferenciaDoDia(hoje, { recebimentos, despesas, cobradores }), [recebimentos, despesas, cobradores]); // eslint-disable-line
+  const per = usePeriodo();
+  const { inicio, fim } = per;
+  const noPeriodo = (v) => { const d = parseData(v); return !!d && d >= inicio && d <= fim; };
+  const conf = useMemo(() => conferenciaDoPeriodo(inicio, fim, { recebimentos, despesas, cobradores }), [inicio, fim, recebimentos, despesas, cobradores]);
 
   const abertos = contratos.filter((c) => c.status !== 'pago');
   const atrasados = abertos.filter((c) => c.status === 'atrasado').sort(ordemDeCobranca);
@@ -31,27 +34,28 @@ export default function Painel() {
   const valorAtrasado = round2(atrasados.reduce((s, c) => s + c.devido.total, 0));
   const valorHoje = round2(vencemHoje.reduce((s, c) => s + c.devido.total, 0));
 
-  const despesasRecentes = useMemo(() => [...despesas]
+  const despesasRecentes = useMemo(() => despesas
+    .filter((d) => d.aprovada == null || noPeriodo(dataDaDespesa(d)))
     .sort((a, b) => {
       const pa = a.aprovada == null ? 0 : 1; const pb = b.aprovada == null ? 0 : 1;
       if (pa !== pb) return pa - pb; // pendentes primeiro
       return (parseData(b.criadoEm || dataDaDespesa(b)) || 0) - (parseData(a.criadoEm || dataDaDespesa(a)) || 0);
     })
-    .slice(0, 6), [despesas]);
+    .slice(0, 8), [despesas, inicio, fim]); // eslint-disable-line
 
-  const novosContratos = useMemo(() => [...contratos]
-    .sort((a, b) => (parseData(b.criadoEm) || 0) - (parseData(a.criadoEm) || 0))
-    .slice(0, 5), [contratos]);
+  const novosNoPeriodo = useMemo(() => contratos
+    .filter((c) => noPeriodo(c.criadoEm))
+    .sort((a, b) => (parseData(b.criadoEm) || 0) - (parseData(a.criadoEm) || 0)), [contratos, inicio, fim]); // eslint-disable-line
+  const novosContratos = novosNoPeriodo.slice(0, 8);
 
   const mes = useMemo(() => {
-    const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-    const noMes = (d) => { const x = parseData(d); return x && x >= ini; };
+    const noMes = noPeriodo;
     const recebido = recebimentos.filter((r) => noMes(r.dataRecebimento || r.criadoEm)).reduce((s, r) => s + num(r.valor), 0);
     const gastos = despesas.filter((d) => d.aprovada === true && noMes(dataDaDespesa(d))).reduce((s, d) => s + num(d.valor), 0);
     const repasses = pagamentosCobradores.filter((p) => noMes(p.criadoEm)).reduce((s, p) => s + Math.abs(num(p.valor)), 0);
     const emprestado = contratos.filter((c) => noMes(c.criadoEm)).reduce((s, c) => s + num(c.valorPrincipalInicial || c.valorPrincipal), 0);
     return { recebido, gastos, repasses, emprestado, resultado: recebido - gastos - repasses };
-  }, [recebimentos, despesas, pagamentosCobradores, contratos]); // eslint-disable-line
+  }, [recebimentos, despesas, pagamentosCobradores, contratos, inicio, fim]); // eslint-disable-line
 
   const decidirDespesa = async (d, aprovada) => {
     try {
@@ -66,14 +70,16 @@ export default function Painel() {
     <div>
       <div className="mb-4">
         <p className="text-sm font-semibold text-text-muted first-letter:uppercase">{hojeExtenso()}</p>
-        <h1 className="text-[26px] font-extrabold tracking-tight leading-tight">Hoje</h1>
+        <h1 className="text-[26px] font-extrabold tracking-tight leading-tight">Painel</h1>
       </div>
 
+      <PeriodoFiltro estado={per} className="mb-4" />
+
       <div className="grid grid-cols-2 gap-3">
-        <Link to="/app/conferencia" className="col-span-2">
+        <Link to={`/app/conferencia${per.query}`} className="col-span-2">
           <Card className="p-4 bg-text-primary text-brand-surface border-transparent active:scale-[0.99] transition-transform">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold opacity-70">Recebido hoje</span>
+              <span className="text-sm font-semibold opacity-70">Recebido {per.rotulo}</span>
               <span className="text-[12px] font-semibold opacity-70 flex items-center">Conferir <ChevronRight className="w-4 h-4" /></span>
             </div>
             <p className="text-4xl font-extrabold tabular-nums mt-1">{formatCurrency(conf.geral.total)}</p>
@@ -92,18 +98,18 @@ export default function Painel() {
           <Stat icon={<CalendarClock className="w-4 h-4" />} label="Vencem hoje" value={formatCurrency(valorHoje)} hint={`${vencemHoje.length} contrato(s)`} tone={vencemHoje.length ? 'warning' : 'default'} />
         </Link>
         <Stat icon={<Wallet className="w-4 h-4" />} label="Na rua (saldo)" value={formatCurrency(naRua)} hint={`${abertos.length} ativos`} />
-        <Stat icon={<Receipt className="w-4 h-4" />} label="Despesas hoje" value={formatCurrency(conf.geral.totalDespesas)} hint={`Líquido ${formatCurrency(conf.geral.liquido)}`} />
+        <Stat icon={<Receipt className="w-4 h-4" />} label="Despesas" value={formatCurrency(conf.geral.totalDespesas)} hint={`Líquido ${formatCurrency(conf.geral.liquido)}`} />
       </div>
 
-      <SectionTitle action={<Link to="/app/conferencia" className="text-[13px] font-semibold text-brand-primary">Detalhar</Link>}>
-        Coletado hoje por cobrador
+      <SectionTitle action={<Link to={`/app/conferencia${per.query}`} className="text-[13px] font-semibold text-brand-primary">Detalhar</Link>}>
+        Coletado por cobrador
       </SectionTitle>
       {conf.grupos.length === 0 ? (
-        <Card><Empty title="Nada recebido ainda hoje" text="Os pagamentos registrados hoje aparecem aqui." /></Card>
+        <Card><Empty title={per.ehHoje ? 'Nada recebido ainda hoje' : 'Nada recebido no período'} text="Os pagamentos registrados aparecem aqui." /></Card>
       ) : (
         <div className="space-y-2">
           {conf.grupos.map((g) => (
-            <Link key={g.id} to={`/app/conferencia#${g.id}`} className="block">
+            <Link key={g.id} to={`/app/conferencia${per.query}#${g.id}`} className="block">
               <Card className="p-3.5 active:bg-brand-surface-2">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-bold truncate">{g.nome}</p>
@@ -134,9 +140,9 @@ export default function Painel() {
         </div>
       )}
 
-      <SectionTitle>Despesas recentes</SectionTitle>
+      <SectionTitle>Despesas {per.ehHoje ? 'de hoje e pendentes' : 'do período e pendentes'}</SectionTitle>
       {despesasRecentes.length === 0 ? (
-        <Card><Empty title="Nenhuma despesa lançada" /></Card>
+        <Card><Empty title="Nenhuma despesa no período" /></Card>
       ) : (
         <Card className="divide-y divide-border-subtle">
           {despesasRecentes.map((d) => (
@@ -159,9 +165,9 @@ export default function Painel() {
         </Card>
       )}
 
-      <SectionTitle action={<Link to="/app/emprestimos" className="text-[13px] font-semibold text-brand-primary">Todos</Link>}>Novos contratos</SectionTitle>
+      <SectionTitle action={<Link to="/app/emprestimos" className="text-[13px] font-semibold text-brand-primary">Todos</Link>}>Novos contratos ({novosNoPeriodo.length})</SectionTitle>
       {novosContratos.length === 0 ? (
-        <Card><Empty icon={<FileText className="w-6 h-6" />} title="Nenhum contrato ainda" action={<Link to="/app/clientes"><Button>Cadastrar cliente</Button></Link>} /></Card>
+        <Card><Empty icon={<FileText className="w-6 h-6" />} title="Nenhum contrato novo no período" action={<Link to="/app/clientes"><Button>Novo empréstimo</Button></Link>} /></Card>
       ) : (
         <Card className="divide-y divide-border-subtle">
           {novosContratos.map((c) => (
@@ -176,13 +182,13 @@ export default function Painel() {
         </Card>
       )}
 
-      <SectionTitle>Resultado do mês</SectionTitle>
+      <SectionTitle>Resultado {per.rotulo}</SectionTitle>
       <Card className="px-4 py-2">
         <div className="flex items-center justify-between py-1.5 text-sm"><span className="text-text-secondary">Recebido</span><span className="font-semibold tabular-nums text-success">{formatCurrency(mes.recebido)}</span></div>
         <div className="flex items-center justify-between py-1.5 text-sm"><span className="text-text-secondary">Despesas aprovadas</span><span className="font-semibold tabular-nums text-danger">−{formatCurrency(mes.gastos)}</span></div>
         <div className="flex items-center justify-between py-1.5 text-sm"><span className="text-text-secondary">Repasses a cobradores</span><span className="font-semibold tabular-nums text-danger">−{formatCurrency(mes.repasses)}</span></div>
-        <div className="flex items-center justify-between py-2 border-t border-border-subtle mt-1"><span className="font-bold flex items-center gap-1.5"><TrendingUp className="w-4 h-4" /> Caixa do mês</span><span className={cn('font-extrabold tabular-nums', mes.resultado >= 0 ? 'text-success' : 'text-danger')}>{formatCurrency(mes.resultado)}</span></div>
-        <div className="flex items-center justify-between py-1.5 text-[13px]"><span className="text-text-muted">Emprestado no mês</span><span className="tabular-nums text-text-secondary">{formatCurrency(mes.emprestado)}</span></div>
+        <div className="flex items-center justify-between py-2 border-t border-border-subtle mt-1"><span className="font-bold flex items-center gap-1.5"><TrendingUp className="w-4 h-4" /> Caixa do período</span><span className={cn('font-extrabold tabular-nums', mes.resultado >= 0 ? 'text-success' : 'text-danger')}>{formatCurrency(mes.resultado)}</span></div>
+        <div className="flex items-center justify-between py-1.5 text-[13px]"><span className="text-text-muted">Emprestado no período</span><span className="tabular-nums text-text-secondary">{formatCurrency(mes.emprestado)}</span></div>
       </Card>
     </div>
   );

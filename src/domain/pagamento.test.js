@@ -228,3 +228,15 @@ test('montarNovoEmprestimo valida e monta', () => {
 test('hojeISO usa o dia local', () => {
   assert.equal(hojeISO(new Date(2026, 10, 22, 23, 30)), '2026-11-22');
 });
+
+import { intervaloDoPeriodo, conferenciaDoPeriodo } from './conferencia.js';
+test('período 7 dias inclui hoje e 6 dias antes', () => {
+  const { inicio, fim } = intervaloDoPeriodo('7d', null, null, HOJE);
+  assert.equal(inicio.getDate(), 16);
+  assert.equal(fim.getDate(), 22);
+  const c = conferenciaDoPeriodo(inicio, fim, {
+    recebimentos: [{ valor: 10, dataRecebimento: diasAtras(6) }, { valor: 5, dataRecebimento: diasAtras(8) }],
+    despesas: [], cobradores: [],
+  });
+  assert.equal(c.geral.total, 10);
+});

@@ -1,7 +1,7 @@
 // Conferência do dia: quanto cada cobrador recebeu (separado em juros,
 // capital, multa), as despesas que lançou e o valor líquido a entregar.
 import { composicaoDoRecebimento } from './pagamento.js';
-import { mesmoDia, num, round2, pertenceAoCobrador, parseData } from './emprestimo.js';
+import { num, round2, pertenceAoCobrador, parseData } from './emprestimo.js';
 
 const somar = (a, b) => {
   const r = { ...a };
@@ -15,9 +15,17 @@ export const dataDaDespesa = (d) => d.data || d.criadoEm;
 /**
  * @returns { grupos: [{ id, nome, cobrador, recebimentos, despesas, totais, total, totalDespesas, liquido }], geral }
  */
-export function conferenciaDoDia(dia, { recebimentos, despesas, cobradores }) {
-  const recsDia = recebimentos.filter((r) => mesmoDia(dataDoRecebimento(r), dia));
-  const despsDia = despesas.filter((d) => mesmoDia(dataDaDespesa(d), dia));
+export function conferenciaDoDia(dia, dados) {
+  const ini = parseData(dia); ini.setHours(0, 0, 0, 0);
+  const fim = new Date(ini); fim.setHours(23, 59, 59, 999);
+  return conferenciaDoPeriodo(ini, fim, dados);
+}
+
+/** Igual à conferência do dia, mas para um intervalo [inicio, fim]. */
+export function conferenciaDoPeriodo(inicio, fim, { recebimentos, despesas, cobradores }) {
+  const dentro = (v) => { const d = parseData(v); return !!d && d >= inicio && d <= fim; };
+  const recsDia = recebimentos.filter((r) => dentro(dataDoRecebimento(r)));
+  const despsDia = despesas.filter((d) => dentro(dataDaDespesa(d)));
 
   const grupoDe = (cobradorId) => cobradores.find((c) => pertenceAoCobrador(cobradorId, c)) || null;
   const mapa = new Map();
@@ -60,4 +68,29 @@ export function conferenciaDoDia(dia, { recebimentos, despesas, cobradores }) {
   }), { totais: {}, total: 0, totalDespesas: 0, liquido: 0, qtd: 0 });
 
   return { grupos, geral };
+}
+
+// ---------- períodos ----------
+export const PERIODOS = [
+  { value: 'hoje', label: 'Hoje' },
+  { value: '7d', label: '7 dias' },
+  { value: '30d', label: '30 dias' },
+  { value: 'custom', label: 'Personalizado' },
+];
+
+/** Converte a escolha do filtro em { inicio, fim } (datas locais, dia inteiro). */
+export function intervaloDoPeriodo(periodo, de, ate, ref = new Date()) {
+  const fim = new Date(ref); fim.setHours(23, 59, 59, 999);
+  const inicio = new Date(ref); inicio.setHours(0, 0, 0, 0);
+  if (periodo === '7d') inicio.setDate(inicio.getDate() - 6);
+  else if (periodo === '30d') inicio.setDate(inicio.getDate() - 29);
+  else if (periodo === 'custom') {
+    const a = parseData(de); const b = parseData(ate);
+    if (a && b) {
+      const i = new Date(Math.min(a, b)); i.setHours(0, 0, 0, 0);
+      const f = new Date(Math.max(a, b)); f.setHours(23, 59, 59, 999);
+      return { inicio: i, fim: f };
+    }
+  }
+  return { inicio, fim };
 }

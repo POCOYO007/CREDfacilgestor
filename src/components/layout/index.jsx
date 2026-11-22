@@ -8,7 +8,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { cn, Button } from '../ui';
 
 const MENU_ADMIN = [
-  { to: '/app', label: 'Hoje', icon: Home, end: true },
+  { to: '/app', label: 'Painel', icon: Home, end: true },
   { to: '/app/emprestimos', label: 'Contratos', icon: FileText },
   { to: '/app/clientes', label: 'Clientes', icon: Users },
   { to: '/app/conferencia', label: 'Conferência', icon: ClipboardCheck },
@@ -23,7 +23,7 @@ const MENU_COBRADOR = [
   { to: '/cobrador', label: 'Rota', icon: RouteIcon, end: true },
   { to: '/cobrador/clientes', label: 'Clientes', icon: Users },
   { to: '/cobrador/despesas', label: 'Despesas', icon: Wallet },
-  { to: '/cobrador/dia', label: 'Meu dia', icon: BarChart3 },
+  { to: '/cobrador/dia', label: 'Resumo', icon: BarChart3 },
 ];
 
 export function ProtectedRoute({ children, role }) {
