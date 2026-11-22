@@ -48,11 +48,12 @@ export default defineConfig(() => {
       },
     },
     build: {
-      chunkSizeWarningLimit: 700,
+      chunkSizeWarningLimit: 1100,
       rollupOptions: {
         output: {
+          // Firebase fica junto do app principal: separar em outro arquivo
+          // quebrava a ordem de registro do App Check ("app-check has not been registered").
           manualChunks: {
-            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/app-check'],
             react: ['react', 'react-dom', 'react-router-dom'],
           },
         },
