@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { calcularQuitacaoAtualizada } from '../utils/calculosEmprestimo';
+import { descreverMulta } from '../domain/emprestimo';
 
 export const gerarContratoPDF = (emprestimo = {}, cliente = {}, config = {}) => {
   const doc = new jsPDF();
@@ -65,11 +66,14 @@ export const gerarContratoPDF = (emprestimo = {}, cliente = {}, config = {}) => 
   doc.setFontSize(10);
   
   const loanDetails = [
-    ['Valor Principal', formatCurrency(emprestimo?.valorPrincipal || emprestimo?.valor || 0)],
-    ['Taxa de Juros', `${emprestimo?.taxaJuros || emprestimo?.taxa || 0}% ao período`],
+    ['Valor Emprestado', formatCurrency(emprestimo?.valorPrincipalInicial || emprestimo?.valorPrincipal || emprestimo?.valor || 0)],
+    ...(emprestimo?.modalidade === 'parcelado'
+      ? [['Parcelas', `${emprestimo?.totalParcelas || 0}x de ${formatCurrency(emprestimo?.valorParcela || 0)}`]]
+      : [['Taxa de Juros', `${emprestimo?.taxaJuros || emprestimo?.taxa || 0}% ao período`]]),
     ['Frequência', (emprestimo?.frequencia || 'semanal').toUpperCase()],
     ['Data de Início', formatDate(emprestimo?.criadoEm || new Date())],
     ['Carência', `${emprestimo?.carenciaDias || 0} dias`],
+    ['Multa por atraso', descreverMulta(emprestimo)],
   ];
 
   autoTable(doc, {
@@ -310,13 +314,10 @@ export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebiment
     doc.text(`Dias em atraso:`, 110, finalY + 15);
     doc.text(`${quitacaoInfo.diasAtraso} dias`, 190, finalY + 15, { align: 'right' });
 
-    doc.text(`Multa fixa:`, 110, finalY + 20);
-    doc.text(`${formatCurrency(quitacaoInfo.multaFixaAplicada)}`, 190, finalY + 20, { align: 'right' });
+    doc.text(`Multa em aberto:`, 110, finalY + 20);
+    doc.text(`${formatCurrency(quitacaoInfo.multaPercentualAplicada)}`, 190, finalY + 20, { align: 'right' });
 
-    doc.text(`Multa percentual:`, 110, finalY + 25);
-    doc.text(`${formatCurrency(quitacaoInfo.multaPercentualAplicada)}`, 190, finalY + 25, { align: 'right' });
-
-    doc.text(`Juros por atraso:`, 110, finalY + 30);
+    doc.text(`Juros em aberto:`, 110, finalY + 30);
     doc.text(`${formatCurrency(quitacaoInfo.multaDiariaAplicada)}`, 190, finalY + 30, { align: 'right' });
 
     doc.line(110, finalY + 34, 190, finalY + 34);

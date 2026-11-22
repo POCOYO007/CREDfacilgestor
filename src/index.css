@@ -1,19 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Lato", ui-sans-serif, system-ui, sans-serif;
-  /* Números de valores usam a mesma fonte da marca (não um mono de código
-     tipo DM Mono) — só com dígitos tabulares (largura fixa) via
-     font-variant-numeric abaixo, que é como o Inter de verdade exibe
-     valores monetários. */
-  --font-mono: "Lato", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --color-brand-primary: var(--brand-primary);
   --color-brand-primary-dark: var(--brand-primary-dark);
   --color-brand-primary-light: var(--brand-primary-light);
   --color-brand-secondary: var(--brand-secondary);
   --color-brand-surface: var(--brand-surface);
+  --color-brand-surface-1: var(--brand-surface);
   --color-brand-surface-2: var(--brand-surface-2);
   --color-brand-accent: var(--brand-accent);
 
@@ -23,140 +20,117 @@
 
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-warning-strong: var(--warning-strong);
   --color-danger: var(--danger);
   --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
   --color-overlay-subtle: var(--overlay-subtle);
   --color-overlay-strong: var(--overlay-strong);
 
-  /* Raio de borda mais contido — produto bancário, não app bubbly */
   --radius-lg: 0.5rem;
-  --radius-xl: 0.625rem;
-  --radius-2xl: 0.75rem;
-  --radius-3xl: 1rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+
+  --animate-sheet: sheet-up 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+  --animate-fade: fade-in 0.18s ease-out;
+
+  @keyframes sheet-up {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
 
-:root {
-  /* :root = mesmos valores do tema claro (padrão do app). Serve de
-     fallback antes do JS aplicar o atributo data-theme no <html>. */
-  --brand-primary: #FF8700;
-  --brand-primary-dark: #FF7A00;
-  --brand-primary-light: #FFF0E6;
-  --brand-accent: #FF500F;
-
-  --success: #20C05C;
-  --warning: #ECC94B;
-  --danger: #FD4F48;
-
-  --brand-secondary: #F5F6FA;
-  --brand-surface: #FFFFFF;
-  --brand-surface-2: #F1F3F6;
-
-  --text-primary: #14161A;
-  --text-secondary: #6C757D;
-  --text-muted: #8C91A5;
-
-  --border-subtle: rgba(15, 23, 42, 0.08);
-  --overlay-subtle: rgba(15, 23, 42, 0.035);
-  --overlay-strong: rgba(15, 23, 42, 0.07);
-}
-
-/* Tema claro (padrão) — fundo cinza muito claro, cartões brancos, texto
-   quase-preto, laranja/vermelho-laranja só nos destaques. Idêntico ao
-   :root acima, mantido explícito por clareza. */
+/* Tema claro (padrão): branco limpo, texto grafite, laranja só nos destaques. */
+:root,
 [data-theme='light'] {
-  --brand-primary: #FF8700;
-  --brand-primary-dark: #FF7A00;
+  --brand-primary: #F07800;
+  --brand-primary-dark: #D96C00;
+  --brand-primary-light: #FFF3E6;
   --brand-accent: #FF500F;
 
-  --success: #20C05C;
-  --warning: #ECC94B;
-  --danger: #FD4F48;
+  --success: #12A150;
+  --warning: #F5A524;
+  --warning-strong: #B26B00;
+  --danger: #E5484D;
 
-  --brand-secondary: #F5F6FA;
+  --brand-secondary: #F4F5F7;
   --brand-surface: #FFFFFF;
-  --brand-surface-2: #F1F3F6;
+  --brand-surface-2: #F1F2F4;
 
-  --text-primary: #14161A;
-  --text-secondary: #6C757D;
-  --text-muted: #8C91A5;
+  --text-primary: #111318;
+  --text-secondary: #5B616E;
+  --text-muted: #8B909C;
 
-  --border-subtle: rgba(15, 23, 42, 0.08);
-  --overlay-subtle: rgba(15, 23, 42, 0.035);
-  --overlay-strong: rgba(15, 23, 42, 0.07);
+  --border-subtle: #E8E9ED;
+  --border-strong: #D5D7DD;
+  --overlay-subtle: rgba(17, 19, 24, 0.03);
+  --overlay-strong: rgba(17, 19, 24, 0.07);
+  color-scheme: light;
 }
 
-/* Tema escuro — "Inter Black" premium: preto profundo, superfícies em
-   grafite, laranja como único destaque, alto contraste, sem glow/neon. */
 [data-theme='dark'] {
-  --brand-primary: #FF7A00;
-  --brand-primary-dark: #D95F00;
-  --brand-accent: #E56D00;
+  --brand-primary: #FF8A1F;
+  --brand-primary-dark: #F07800;
+  --brand-primary-light: #2A1A08;
+  --brand-accent: #FF6A33;
 
-  --success: #35C978;
-  --warning: #F4B223;
-  --danger: #F05252;
+  --success: #2FC46E;
+  --warning: #F5B544;
+  --warning-strong: #F5B544;
+  --danger: #F2555A;
 
-  --brand-secondary: #080808;
-  --brand-surface: #1A1A1A;
-  --brand-surface-2: #222222;
+  --brand-secondary: #0B0B0C;
+  --brand-surface: #161618;
+  --brand-surface-2: #1F1F22;
 
-  --text-primary: #F7F7F7;
-  --text-secondary: #A6A6A6;
-  --text-muted: #6F6F6F;
+  --text-primary: #F4F4F5;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
 
-  --border-subtle: #2A2A2A;
-  --overlay-subtle: rgba(255, 255, 255, 0.04);
+  --border-subtle: #26262A;
+  --border-strong: #34343A;
+  --overlay-subtle: rgba(255, 255, 255, 0.03);
   --overlay-strong: rgba(255, 255, 255, 0.08);
+  color-scheme: dark;
 }
 
 @layer base {
+  html { -webkit-tap-highlight-color: transparent; }
   body {
-    @apply bg-brand-secondary text-text-primary font-sans antialiased transition-colors duration-300;
-    /* Dígitos com largura fixa (alinham em tabelas/colunas de valores) —
-       só afeta números, letras continuam normais. */
+    @apply bg-brand-secondary text-text-primary font-sans antialiased;
     font-variant-numeric: tabular-nums;
   }
-
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-brand-secondary;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-brand-surface-2 rounded-full;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-brand-primary;
-  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type='number'] { -moz-appearance: textfield; }
 }
 
 @layer components {
-  .glass {
-    background: var(--brand-surface);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border-subtle);
-  }
-
-  .bento-card {
-    background: var(--brand-surface);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border-subtle);
-    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
-    @apply rounded-2xl p-6 transition-all duration-200 hover:border-brand-primary/30;
-  }
-
-  [data-theme='dark'] .bento-card {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-  }
-
-  .btn-primary {
-    @apply bg-linear-to-r from-brand-accent to-brand-primary text-white font-semibold py-2 px-4 rounded-xl shadow-lg hover:shadow-brand-primary/20 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  .surface-card {
+    @apply bg-brand-surface border border-border-subtle rounded-2xl;
   }
 
   .input-field {
-    @apply bg-brand-surface-2 border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-hidden focus:border-brand-primary transition-colors text-text-primary placeholder:text-text-muted;
+    @apply w-full h-12 bg-brand-surface-2 border border-transparent rounded-xl px-3.5 text-[16px] text-text-primary
+      placeholder:text-text-muted transition-colors focus:outline-none focus:border-brand-primary focus:bg-brand-surface;
   }
+
+  .select-chevron {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238B909C' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+
+  /* ---- compatibilidade com telas antigas ---- */
+  .glass { @apply bg-brand-surface border border-border-subtle; }
+  .bento-card { @apply bg-brand-surface border border-border-subtle rounded-2xl p-5; }
+  .btn-primary { @apply bg-brand-primary text-white font-semibold rounded-xl hover:bg-brand-primary-dark transition-colors; }
 }

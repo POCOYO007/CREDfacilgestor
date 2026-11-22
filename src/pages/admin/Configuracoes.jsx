@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Button, Card, Input, cn } from '../../components/ui';
+import { Button, Card, Input, PageHeader, cn } from '../../components/ui';
+import { CamposMulta } from '../../components/EmprestimoForm';
 import { Settings, Building2, MessageSquare, ShieldCheck, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -23,7 +24,9 @@ export default function Configuracoes() {
       ...formData,
       taxaPadrao: parseFloat(formData.taxaPadrao) || 0,
       carenciaPadrao: parseInt(formData.carenciaPadrao) || 0,
-      multaPercentualPadrao: parseFloat(formData.multaPercentualPadrao) || 0
+      multaPercentualPadrao: parseFloat(formData.multaPercentualPadrao) || 0,
+      tipoMultaPadrao: formData.tipoMultaPadrao || 'parcela_percentual',
+      valorMultaPadrao: parseFloat(formData.valorMultaPadrao) || 0
     };
     
     try {
@@ -41,15 +44,12 @@ export default function Configuracoes() {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Configurações</h2>
-        <p className="text-text-secondary">Personalize o sistema e seus templates de comunicação.</p>
-      </div>
+    <div className="space-y-4">
+      <PageHeader back="/app/mais" title="Configurações" subtitle="Empresa, padrões e mensagens" />
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col gap-4">
         {/* Sidebar de Abas */}
-        <aside className="lg:w-64 space-y-2">
+        <aside className="flex gap-2 overflow-x-auto no-scrollbar">
           {[
             { id: 'empresa', label: 'Empresa', icon: Building2 },
             { id: 'templates', label: 'Templates WhatsApp', icon: MessageSquare },
@@ -59,11 +59,11 @@ export default function Configuracoes() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
-                activeTab === tab.id ? "bg-brand-primary text-white shadow-lg" : "text-text-secondary hover:bg-brand-surface-2"
+                "shrink-0 flex items-center gap-2 px-3.5 h-10 rounded-full text-sm font-semibold border transition-colors",
+                activeTab === tab.id ? "bg-text-primary text-brand-surface border-text-primary" : "bg-brand-surface text-text-secondary border-border-subtle"
               )}
             >
-              <tab.icon size={20} />
+              <tab.icon size={16} />
               <span className="font-medium">{tab.label}</span>
             </button>
           ))}
@@ -71,7 +71,7 @@ export default function Configuracoes() {
 
         {/* Conteúdo da Aba */}
         <div className="flex-1 space-y-6">
-          <Card className="p-8">
+          <Card className="p-4 sm:p-6">
             {activeTab === 'empresa' && (
               <div className="space-y-6">
                 <h3 className="text-xl font-bold mb-6">Dados da Empresa</h3>
@@ -144,6 +144,7 @@ export default function Configuracoes() {
                       <option value="semanal">Semanal</option>
                       <option value="quinzenal">Quinzenal</option>
                       <option value="mensal">Mensal</option>
+                      <option value="dia_especifico">Todo mês no dia…</option>
                     </select>
                   </div>
                   <Input
@@ -152,18 +153,19 @@ export default function Configuracoes() {
                     value={formData.carenciaPadrao}
                     onChange={e => updateField('carenciaPadrao', e.target.value)}
                   />
-                  <Input
-                    label="Multa Padrão (%)"
-                    type="number"
-                    step="0.1"
-                    value={formData.multaPercentualPadrao ?? 2}
-                    onChange={e => updateField('multaPercentualPadrao', e.target.value)}
-                  />
+                  <div className="md:col-span-2">
+                    <CamposMulta
+                      tipo={formData.tipoMultaPadrao || 'parcela_percentual'}
+                      valor={formData.valorMultaPadrao ?? formData.multaPercentualPadrao ?? 10}
+                      onTipo={v => updateField('tipoMultaPadrao', v)}
+                      onValor={v => updateField('valorMultaPadrao', v)}
+                    />
+                  </div>
                 </div>
               </div>
             )}
 
-            <div className="mt-12 pt-8 border-t border-border-subtle flex justify-end">
+            <div className="mt-6 pt-4 border-t border-border-subtle flex justify-end">
               <Button onClick={handleSave} className="gap-2 px-8">
                 <Save size={20} />
                 Salvar Alterações

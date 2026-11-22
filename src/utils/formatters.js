@@ -186,9 +186,8 @@ Segue o resumo atualizado do seu contrato:
 
 Capital / saldo devedor: ${formatCurrency(quitacaoInfo.saldoDevedor)}
 Dias em atraso: ${quitacaoInfo.diasAtraso} dias
-Multa fixa: ${formatCurrency(quitacaoInfo.multaFixaAplicada)}
-Multa percentual: ${formatCurrency(quitacaoInfo.multaPercentualAplicada)}
-Juros por atraso: ${formatCurrency(quitacaoInfo.multaDiariaAplicada)}
+Multa em aberto: ${formatCurrency(quitacaoInfo.multaPercentualAplicada)}
+Juros em aberto: ${formatCurrency(quitacaoInfo.multaDiariaAplicada)}
 
 Total de encargos: ${formatCurrency(quitacaoInfo.totalEncargosAtraso)}
 Total para quitação hoje: ${formatCurrency(quitacaoInfo.totalQuitacao)}

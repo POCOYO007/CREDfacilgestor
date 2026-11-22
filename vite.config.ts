@@ -1,11 +1,10 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
+import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
 
-export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, '.', '');
+export default defineConfig(() => {
   return {
     plugins: [
       react(),
@@ -17,8 +16,8 @@ export default defineConfig(({mode}) => {
           name: 'Meu Jurista Online',
           short_name: 'Meu Jurista',
           description: 'Gestão inteligente de crédito e cobrança',
-          theme_color: '#FF8700',
-          background_color: '#F5F6FA',
+          theme_color: '#FFFFFF',
+          background_color: '#F4F5F7',
           display: 'standalone',
           start_url: '/',
           scope: '/',
@@ -43,18 +42,21 @@ export default defineConfig(({mode}) => {
         },
       }),
     ],
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
     },
-    server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-      hmr: process.env.DISABLE_HMR !== 'true',
+    build: {
+      chunkSizeWarningLimit: 700,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/app-check'],
+            react: ['react', 'react-dom', 'react-router-dom'],
+          },
+        },
+      },
     },
   };
 });
