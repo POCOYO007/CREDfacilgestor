@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { AlertTriangle, CalendarClock, Wallet, TrendingUp, ChevronRight, Check, X, FileText, Receipt } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { linkContrato } from '../../domain/emprestimo';
 import { useContratos, ordemDeCobranca } from '../../hooks/useCarteira';
 import { conferenciaDoPeriodo, dataDaDespesa } from '../../domain/conferencia';
 import PeriodoFiltro, { usePeriodo } from '../../components/PeriodoFiltro';
@@ -87,6 +88,7 @@ export default function Painel() {
               <span>{conf.geral.qtd} pagamento(s)</span>
               {conf.geral.totais.juros > 0 && <span>Juros {formatCurrency(conf.geral.totais.juros)}</span>}
               {conf.geral.totais.capital > 0 && <span>Capital {formatCurrency(conf.geral.totais.capital)}</span>}
+              {conf.geral.totais.aluguel > 0 && <span>Aluguéis {formatCurrency(conf.geral.totais.aluguel)}</span>}
               {conf.geral.totais.multa > 0 && <span>Multa {formatCurrency(conf.geral.totais.multa)}</span>}
             </div>
           </Card>
@@ -119,6 +121,7 @@ export default function Painel() {
                   {g.totais.juros > 0 && <span>Juros {formatCurrency(g.totais.juros)}</span>}
                   {g.totais.capital > 0 && <span>Capital {formatCurrency(g.totais.capital)}</span>}
                   {g.totais.parcela > 0 && <span>Parcelas {formatCurrency(g.totais.parcela)}</span>}
+                  {g.totais.aluguel > 0 && <span>Aluguéis {formatCurrency(g.totais.aluguel)}</span>}
                   {g.totais.multa > 0 && <span>Multa {formatCurrency(g.totais.multa)}</span>}
                   {g.totalDespesas > 0 && <span className="text-danger">Despesas −{formatCurrency(g.totalDespesas)}</span>}
                   <span className="font-bold text-text-primary">Líquido {formatCurrency(g.liquido)}</span>
@@ -136,7 +139,7 @@ export default function Painel() {
         <Card><Empty title="Nenhum contrato atrasado 🎉" /></Card>
       ) : (
         <div className="space-y-2">
-          {atrasados.slice(0, 3).map((c) => <ContratoCard key={c.id} contrato={c} to={`/app/emprestimos/${c.id}`} config={config} mostrarCobrador />)}
+          {atrasados.slice(0, 3).map((c) => <ContratoCard key={c.id} contrato={c} to={linkContrato(c)} config={config} mostrarCobrador />)}
         </div>
       )}
 
@@ -171,7 +174,7 @@ export default function Painel() {
       ) : (
         <Card className="divide-y divide-border-subtle">
           {novosContratos.map((c) => (
-            <Link key={c.id} to={`/app/emprestimos/${c.id}`} className="flex items-center gap-3 px-4 py-3 active:bg-brand-surface-2">
+            <Link key={c.id} to={linkContrato(c)} className="flex items-center gap-3 px-4 py-3 active:bg-brand-surface-2">
               <div className="flex-1 min-w-0">
                 <p className="font-semibold truncate">{c.cliente?.nome || '—'}</p>
                 <p className="text-[12px] text-text-secondary">{formatDate(c.criadoEm)} · {c.cobrador?.nome?.split(' ')[0] || 'Gestor'}</p>

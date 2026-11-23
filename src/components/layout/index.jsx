@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   Home, FileText, Users, ClipboardCheck, Menu, Route as RouteIcon, Wallet, BarChart3, LogOut, Sun, Moon,
-  Scale, Loader2, ShieldAlert, UsersRound, Settings,
+  Scale, Loader2, ShieldAlert, UsersRound, Settings, KeyRound,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { cn, Button } from '../ui';
@@ -10,11 +10,12 @@ import { cn, Button } from '../ui';
 const MENU_ADMIN = [
   { to: '/app', label: 'Painel', icon: Home, end: true },
   { to: '/app/emprestimos', label: 'Contratos', icon: FileText },
+  { to: '/app/alugueis', label: 'Aluguéis', icon: KeyRound },
   { to: '/app/clientes', label: 'Clientes', icon: Users },
-  { to: '/app/conferencia', label: 'Conferência', icon: ClipboardCheck },
   { to: '/app/mais', label: 'Mais', icon: Menu, desktopHidden: true },
 ];
 const MENU_ADMIN_DESKTOP_EXTRA = [
+  { to: '/app/conferencia', label: 'Conferência', icon: ClipboardCheck },
   { to: '/app/equipe', label: 'Equipe', icon: UsersRound },
   { to: '/app/configuracoes', label: 'Configurações', icon: Settings },
 ];

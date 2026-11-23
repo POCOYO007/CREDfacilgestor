@@ -7,7 +7,7 @@ import { ehParcelado, hojeISO, juroPorPeriodo, num, parseData } from '../domain/
 import { formatCurrency, formatDate, substituirVariaveis, buildWhatsAppUrl } from '../utils/formatters';
 import { useAppStore } from '../store/useAppStore';
 
-const ROTULOS_COMPOSICAO = { multa: 'Multa', juros: 'Juros', capital: 'Capital', parcela: 'Parcela' };
+const ROTULOS_COMPOSICAO = { multa: 'Multa', juros: 'Juros', capital: 'Capital', parcela: 'Parcela', aluguel: 'Aluguel' };
 
 /**
  * Registrar pagamento — a mesma tela para gestor e cobrador.
@@ -27,6 +27,8 @@ export default function PagamentoSheet({ isOpen, onClose, contrato, cobradorId, 
   const [concluido, setConcluido] = useState(null); // { rec, contratoDepois }
 
   const parcelado = contrato ? ehParcelado(contrato) : false;
+  const aluguel = contrato?.modalidade === 'aluguel';
+  const nomeParcela = aluguel ? 'Aluguel' : 'Parcela';
 
   const sugestoes = useMemo(() => {
     if (!contrato) return {};
@@ -66,13 +68,13 @@ export default function PagamentoSheet({ isOpen, onClose, contrato, cobradorId, 
     { value: 'regular', label: 'Pagamento' },
     ...(!parcelado ? [{ value: 'somente_juros', label: 'Só juros' }] : []),
     ...(contrato.multa > 0 ? [{ value: 'multa', label: 'Só multa' }] : []),
-    { value: 'quitacao', label: 'Quitar' },
+    ...(!aluguel ? [{ value: 'quitacao', label: 'Quitar' }] : []),
   ];
 
   const atalhos = [
     { label: 'Devido hoje', valor: contrato.devido.total },
-    parcelado ? { label: 'Parcela', valor: num(contrato.valorParcela) } : { label: 'Juro do período', valor: juroPorPeriodo(contrato) },
-    { label: 'Quitar', valor: contrato.quitacao, tipo: 'quitacao' },
+    parcelado ? { label: nomeParcela, valor: num(contrato.valorParcela) } : { label: 'Juro do período', valor: juroPorPeriodo(contrato) },
+    ...(!aluguel ? [{ label: 'Quitar', valor: contrato.quitacao, tipo: 'quitacao' }] : []),
   ].filter((a) => a.valor > 0);
 
   const bloqueioDesconto = ehCobrador && tipo === 'quitacao' && sim?.desconto > 0;
@@ -164,9 +166,9 @@ export default function PagamentoSheet({ isOpen, onClose, contrato, cobradorId, 
           {contrato.devido.multa > 0 && <span>Multa <b className="text-danger">{formatCurrency(contrato.devido.multa)}</b></span>}
           {contrato.devido.acrescimo > 0 && <span>Restante anterior <b>{formatCurrency(contrato.devido.acrescimo)}</b></span>}
           {parcelado
-            ? <span>{contrato.devido.qtdParcelas > 1 ? `${contrato.devido.qtdParcelas} parcelas` : 'Parcela'} <b>{formatCurrency(contrato.devido.parcelas)}</b></span>
+            ? <span>{contrato.devido.qtdParcelas > 1 ? `${contrato.devido.qtdParcelas} ${aluguel ? 'aluguéis' : 'parcelas'}` : nomeParcela} <b>{formatCurrency(contrato.devido.parcelas)}</b></span>
             : <span>Juros {contrato.devido.periodos > 1 ? `(${contrato.devido.periodos} períodos)` : ''} <b>{formatCurrency(contrato.devido.juros)}</b></span>}
-          <span>Saldo <b>{formatCurrency(contrato.saldo)}</b></span>
+          {!aluguel && <span>Saldo <b>{formatCurrency(contrato.saldo)}</b></span>}
         </div>
       </div>
 
@@ -197,7 +199,7 @@ export default function PagamentoSheet({ isOpen, onClose, contrato, cobradorId, 
         <div className="mt-4 rounded-2xl border-2 border-warning/50 bg-warning/8 p-3.5">
           <p className="text-sm font-bold flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-warning-strong" />
-            Faltam {formatCurrency(sim.parcial.faltando)} {sim.parcial.rotulo === 'parcela' ? 'desta parcela' : 'deste juro'}
+            Faltam {formatCurrency(sim.parcial.faltando)} {{ parcela: 'desta parcela', aluguel: 'deste aluguel', juros: 'deste juro' }[sim.parcial.rotulo]}
           </p>
           {sim.parcial.podeJogarProxima ? (
             <div className="grid gap-2 mt-3">
@@ -217,7 +219,7 @@ export default function PagamentoSheet({ isOpen, onClose, contrato, cobradorId, 
               />
             </div>
           ) : (
-            <p className="text-[13px] text-text-secondary mt-1.5">É a última parcela: o restante fica em aberto neste período.</p>
+            <p className="text-[13px] text-text-secondary mt-1.5">{aluguel ? 'É o último período do aluguel' : 'É a última parcela'}: o restante fica em aberto neste período.</p>
           )}
         </div>
       )}
@@ -230,9 +232,9 @@ export default function PagamentoSheet({ isOpen, onClose, contrato, cobradorId, 
           {sim.desconto > 0 && <Row label="Desconto na quitação" value={formatCurrency(sim.desconto)} tone="warning" />}
           {sim.troco > 0 && <Row label="Acima do devido (não abate)" value={formatCurrency(sim.troco)} tone="warning" />}
           <div className="border-t border-border-subtle my-1.5" />
-          <Row label="Saldo depois" value={formatCurrency(depois.saldoDevedor)} strong />
+          <Row label={aluguel ? 'Em aberto depois' : 'Saldo depois'} value={formatCurrency(depois.saldoDevedor)} strong />
           {depois.status === 'pago'
-            ? <Row label="Contrato" value="Quitado ✓" tone="success" />
+            ? <Row label="Contrato" value={aluguel ? 'Encerrado ✓' : 'Quitado ✓'} tone="success" />
             : vencMudou && <Row label="Próximo vencimento" value={formatDate(depois.dataVencimento)} />}
           {bloqueioDesconto && <p className="text-[13px] text-danger font-semibold mt-2">Quitação com desconto só pode ser feita pelo gestor.</p>}
         </div>

@@ -10,7 +10,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { PageHeader, Card, Row, SectionTitle, Empty } from '../../components/ui';
 import { formatCurrency } from '../../utils/formatters';
 
-const ROTULOS = [['juros', 'Juros'], ['capital', 'Capital'], ['parcela', 'Parcelas'], ['multa', 'Multa']];
+const ROTULOS = [['juros', 'Juros'], ['capital', 'Capital'], ['parcela', 'Parcelas'], ['aluguel', 'Aluguéis'], ['multa', 'Multa']];
 
 export default function MeuDia() {
   const { eu, recebimentos, despesas } = useMeuCobrador();

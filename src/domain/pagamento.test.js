@@ -240,3 +240,61 @@ test('período 7 dias inclui hoje e 6 dias antes', () => {
   });
   assert.equal(c.geral.total, 10);
 });
+
+// ----- ALUGUEL -----
+import { montarNovoAluguel, saldoAluguelEmAberto } from './emprestimo.js';
+const aluguel = (extra = {}) => ({
+  modalidade: 'aluguel', versaoRegra: 2, valorParcela: 300, totalParcelas: 0, parcelasPagas: 0, valorPrincipal: 0,
+  frequencia: 'semanal', carenciaDias: 0, dataVencimento: diasFrente(2), tipoMulta: 'nenhuma', valorMulta: 0, ...extra,
+});
+
+test('aluguel sem prazo: paga 300 → período anda, continua ativo', () => {
+  const r = pagar(aluguel(), 300);
+  assert.equal(r.contratoDepois.parcelasPagas, 1);
+  assert.equal(r.contratoDepois.status, 'ativo');
+  assert.equal(r.composicao.aluguel, 300);
+  assert.equal(r.avancouPeriodos, 1);
+});
+
+test('aluguel atrasado 2 semanas: deve 2 aluguéis + multa', () => {
+  const emp = aluguel({ dataVencimento: diasAtras(8), tipoMulta: 'parcela_fixa', valorMulta: 30 });
+  assert.equal(saldoAluguelEmAberto(emp, HOJE), 600);
+  assert.equal(devidoAgora(emp, HOJE).total, 660);
+  assert.equal(calcularStatus(emp, HOJE), 'atrasado');
+});
+
+test('aluguel parcial: 100 de 300 pode jogar pra próxima', () => {
+  const r = pagar(aluguel(), 100, 'regular', 'proxima');
+  assert.equal(r.contratoDepois.acrescimoProximo, 200);
+  assert.equal(devidoAgora(r.contratoDepois, HOJE).total, 500);
+});
+
+test('aluguel com prazo: último período encerra', () => {
+  const r = pagar(aluguel({ totalParcelas: 4, parcelasPagas: 3 }), 300);
+  assert.equal(r.contratoDepois.status, 'pago');
+});
+
+test('aluguel não aceita "quitar"', () => {
+  assert.ok(pagar(aluguel(), 300, 'quitacao').erro);
+});
+
+test('aluguel encerrado fica fechado', () => {
+  assert.equal(calcularStatus(aluguel({ encerrado: true }), HOJE), 'pago');
+});
+
+test('montarNovoAluguel valida descrição e valor', () => {
+  assert.throws(() => montarNovoAluguel({ valorParcela: 300 }, {}));
+  const a = montarNovoAluguel({ valorParcela: 300, itemDescricao: 'Honda CG 160', itemTipo: 'moto', frequencia: 'semanal', dataInicio: '2026-11-22', prazo: 'indeterminado' }, { clienteId: 'c', cobradorId: 'k' });
+  assert.equal(a.modalidade, 'aluguel');
+  assert.equal(a.totalParcelas, 0);
+  assert.equal(a.valorPrincipal, 0);
+});
+
+test('aluguel encerrado com dívida continua cobrável e não gera aluguel novo', () => {
+  const enc = aluguel({ encerrado: true, acrescimoProximo: 600, parcelasPagas: 5, dataVencimento: diasAtras(8) });
+  assert.equal(calcularStatus(enc, HOJE), 'atrasado');
+  assert.equal(devidoAgora(enc, HOJE).total, 600);
+  const r = pagar(enc, 600);
+  assert.equal(r.contratoDepois.status, 'pago');
+  assert.equal(r.contratoDepois.parcelasPagas, 5);
+});

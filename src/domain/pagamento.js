@@ -17,7 +17,7 @@
 import {
   num, int, round2, ehParcelado, juroPorPeriodo, periodosEmAberto, multaDinamica, multaDevida,
   proximoVencimento, saldoDevedor, calcularStatus, conservarMulta, fracaoJurosParcela, valorQuitacao,
-  parcelasRestantes,
+  parcelasRestantes, ehAluguel, totalParcelas,
 } from './emprestimo.js';
 
 const EPS = 0.005;
@@ -53,11 +53,12 @@ export function simularPagamento(emp, { valor, tipo = 'regular', opcaoParcial = 
   const v = round2(valor);
   if (!(v > 0)) return { erro: 'Informe um valor maior que zero.' };
   if (tipo === 'somente_juros' && ehParcelado(emp)) return { erro: '"Só juros" não existe para contrato parcelado.' };
+  if (tipo === 'quitacao' && ehAluguel(emp)) return { erro: 'Para aluguel use "Pagamento". Para terminar o contrato, use "Encerrar aluguel".' };
 
   const parcelado = ehParcelado(emp);
   const multaDin = multaDinamica(emp, ref);
   const multaAntes = multaDevida(emp, ref);
-  const comp = { multa: 0, juros: 0, capital: 0, parcela: 0 };
+  const comp = { multa: 0, juros: 0, capital: 0, parcela: 0, aluguel: 0 };
   let r = v;
   let multaAcumulada = num(emp.multaAcumulada);
   let multaAbatida = num(emp.multaAbatida);
@@ -115,7 +116,7 @@ export function simularPagamento(emp, { valor, tipo = 'regular', opcaoParcial = 
   if (parcelado) {
     // ---------- 3. PARCELAS ----------
     const valP = num(emp.valorParcela);
-    const total = int(emp.totalParcelas);
+    const total = totalParcelas(emp);
     let pagas = int(emp.parcelasPagas);
     let pagoAtual = num(emp.pagoParcelaAtual);
     while (r > EPS && pagas < total && valP > 0) {
@@ -127,7 +128,7 @@ export function simularPagamento(emp, { valor, tipo = 'regular', opcaoParcial = 
       } else {
         const faltando = round2(falta - r);
         const podeJogarProxima = pagas < total - 1;
-        parcial = { faltando, podeJogarProxima, rotulo: 'parcela' };
+        parcial = { faltando, podeJogarProxima, rotulo: ehAluguel(emp) ? 'aluguel' : 'parcela' };
         registrarParcela(comp, emp, r);
         if (opcaoParcial === 'proxima' && podeJogarProxima) {
           pagas += 1; pagoAtual = 0; avancou += 1;
@@ -207,6 +208,7 @@ export function simularPagamento(emp, { valor, tipo = 'regular', opcaoParcial = 
 }
 
 function registrarParcela(comp, emp, valor) {
+  if (ehAluguel(emp)) { comp.aluguel = round2((comp.aluguel || 0) + valor); return; }
   const f = fracaoJurosParcela(emp);
   if (f === null) { comp.parcela = round2(comp.parcela + valor); return; }
   const j = round2(valor * f);
@@ -215,7 +217,9 @@ function registrarParcela(comp, emp, valor) {
 }
 
 function finalizar(emp, n, comp, { parcial, troco, desconto, avancou, ref, opcaoParcial }) {
-  if (ehParcelado(n)) {
+  if (ehAluguel(n)) {
+    n.valorPrincipal = 0;
+  } else if (ehParcelado(n)) {
     n.valorPrincipal = saldoDevedor(n);
     if (parcelasRestantes(n) === 0 && num(n.acrescimoProximo) <= EPS) n.valorPrincipal = 0;
   }

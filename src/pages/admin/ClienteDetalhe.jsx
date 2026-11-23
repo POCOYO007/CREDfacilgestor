@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Trash2, MessageCircle, Phone, MapPin, FileText } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { linkContrato } from '../../domain/emprestimo';
 import { useContratos } from '../../hooks/useCarteira';
 import { PageHeader, Card, Row, SectionTitle, Button, Empty, Modal, IconButton, cn } from '../../components/ui';
 import ContratoCard, { linkMapa } from '../../components/ContratoCard';
 import ClienteForm from '../../components/ClienteForm';
 import EmprestimoForm from '../../components/EmprestimoForm';
+import AluguelForm from '../../components/AluguelForm';
 import { TelaCarregando } from '../../components/layout';
 import { formatCurrency, buildWhatsAppUrl } from '../../utils/formatters';
 
@@ -21,6 +23,7 @@ export default function ClienteDetalhe() {
   const contratos = useContratos();
   const [editando, setEditando] = useState(false);
   const [novoEmp, setNovoEmp] = useState(false);
+  const [novoAluguel, setNovoAluguel] = useState(false);
   const [excluir, setExcluir] = useState(false);
   const [ocupado, setOcupado] = useState(false);
 
@@ -68,26 +71,32 @@ export default function ClienteDetalhe() {
         <Row label="Em aberto" value={formatCurrency(ativos.reduce((s, c) => s + c.saldo, 0))} strong />
       </Card>
 
-      <SectionTitle action={<Button size="sm" onClick={() => setNovoEmp(true)}><Plus className="w-4 h-4" /> Empréstimo</Button>}>
+      <SectionTitle action={(
+        <div className="flex gap-1.5">
+          <Button size="sm" variant="secondary" onClick={() => setNovoAluguel(true)}><Plus className="w-4 h-4" /> Aluguel</Button>
+          <Button size="sm" onClick={() => setNovoEmp(true)}><Plus className="w-4 h-4" /> Empréstimo</Button>
+        </div>
+      )}>
         Contratos ativos ({ativos.length})
       </SectionTitle>
       {ativos.length === 0 ? (
         <Card><Empty icon={<FileText className="w-6 h-6" />} title="Nenhum contrato ativo" action={<Button onClick={() => setNovoEmp(true)}>Novo empréstimo</Button>} /></Card>
       ) : (
-        <div className="space-y-2">{ativos.map((c) => <ContratoCard key={c.id} contrato={c} to={`/app/emprestimos/${c.id}`} config={config} mostrarCobrador />)}</div>
+        <div className="space-y-2">{ativos.map((c) => <ContratoCard key={c.id} contrato={c} to={linkContrato(c)} config={config} mostrarCobrador />)}</div>
       )}
 
       {quitados.length > 0 && (
         <>
           <SectionTitle>Quitados ({quitados.length})</SectionTitle>
-          <div className="space-y-2">{quitados.map((c) => <ContratoCard key={c.id} contrato={c} to={`/app/emprestimos/${c.id}`} config={config} />)}</div>
+          <div className="space-y-2">{quitados.map((c) => <ContratoCard key={c.id} contrato={c} to={linkContrato(c)} config={config} />)}</div>
         </>
       )}
 
       <Button variant="danger-soft" block className="mt-8" onClick={() => setExcluir(true)}><Trash2 className="w-4 h-4" /> Excluir cliente</Button>
 
       <ClienteForm isOpen={editando} onClose={() => setEditando(false)} cliente={cliente} />
-      <EmprestimoForm isOpen={novoEmp} onClose={() => setNovoEmp(false)} cliente={cliente} onCriado={(e) => e.id && navigate(`/app/emprestimos/${e.id}`)} />
+      <AluguelForm isOpen={novoAluguel} onClose={() => setNovoAluguel(false)} cliente={cliente} onCriado={(e) => e.id && navigate(linkContrato(e))} />
+      <EmprestimoForm isOpen={novoEmp} onClose={() => setNovoEmp(false)} cliente={cliente} onCriado={(e) => e.id && navigate(linkContrato(e))} />
       <Modal
         isOpen={excluir}
         onClose={() => setExcluir(false)}

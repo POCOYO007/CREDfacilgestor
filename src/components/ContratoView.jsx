@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { MessageCircle, Pencil, FileDown, Trash2, Undo2, Receipt, MoreHorizontal, Phone, MapPin } from 'lucide-react';
+import { MessageCircle, Pencil, FileDown, Trash2, Undo2, Receipt, MoreHorizontal, Phone, MapPin, Lock, Unlock } from 'lucide-react';
 import { PageHeader, Card, Badge, Button, Row, SectionTitle, Modal, Empty, IconButton, cn } from './ui';
 import PagamentoSheet from './PagamentoSheet';
 import EditarContratoSheet from './EditarContratoSheet';
@@ -12,7 +12,9 @@ import { ehParcelado, descreverMulta, juroPorPeriodo, num, int, parseData } from
 import { composicaoDoRecebimento, TIPOS_PAGAMENTO } from '../domain/pagamento';
 import { formatCurrency, formatDate } from '../utils/formatters';
 
-const ROTULO = { multa: 'multa', juros: 'juros', capital: 'capital', parcela: 'parcela' };
+const ROTULO = { multa: 'multa', juros: 'juros', capital: 'capital', parcela: 'parcela', aluguel: 'aluguel' };
+const ROTULO_FREQ = { diario: 'por dia', semanal: 'por semana', quinzenal: 'por quinzena', mensal: 'por mês', dia_especifico: 'por mês' };
+const ROTULO_ITEM = { carro: 'Carro', moto: 'Moto', casa: 'Casa / imóvel', outro: 'Item' };
 
 export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }) {
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
   const config = useAppStore((s) => s.config);
   const removerRecebimento = useAppStore((s) => s.removerRecebimento);
   const removerEmprestimo = useAppStore((s) => s.removerEmprestimo);
+  const editarEmprestimo = useAppStore((s) => s.editarEmprestimo);
   const admin = modo === 'admin';
 
   const [pagando, setPagando] = useState(false);
@@ -28,6 +31,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
   const [excluirRec, setExcluirRec] = useState(null);
   const [excluirContrato, setExcluirContrato] = useState(false);
   const [ocupado, setOcupado] = useState(false);
+  const [encerrar, setEncerrar] = useState(false);
 
   const historico = useMemo(() => recebimentos
     .filter((r) => r.emprestimoId === c.id)
@@ -36,6 +40,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
   const st = statusVisual(c);
   const parcelado = ehParcelado(c);
   const pago = c.status === 'pago';
+  const aluguel = c.modalidade === 'aluguel';
   const whats = linkWhatsCobranca(c, config);
   const mapa = linkMapa(c.cliente);
 
@@ -75,7 +80,12 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
                 <div className="absolute right-0 top-11 z-20 w-60 surface-card shadow-xl p-1.5">
-                  <MenuItem icon={FileDown} onClick={() => { setMenu(false); pdf('gerarContratoPDF', c, c.cliente, config); }}>Contrato em PDF</MenuItem>
+                  {!aluguel && <MenuItem icon={FileDown} onClick={() => { setMenu(false); pdf('gerarContratoPDF', c, c.cliente, config); }}>Contrato em PDF</MenuItem>}
+                  {aluguel && (
+                    <MenuItem icon={c.encerrado ? Unlock : Lock} onClick={() => { setMenu(false); setEncerrar(true); }}>
+                      {c.encerrado ? 'Reabrir aluguel' : 'Encerrar aluguel'}
+                    </MenuItem>
+                  )}
                   <MenuItem icon={Receipt} onClick={() => { setMenu(false); pdf('gerarExtratoPagamentos', c, c.cliente, historico, config); }}>Extrato em PDF</MenuItem>
                   {c.cliente && <MenuItem icon={Receipt} onClick={() => navigate(`/app/clientes/${c.cliente.id}`)}>Ver cliente</MenuItem>}
                   <MenuItem icon={Trash2} danger onClick={() => { setMenu(false); setExcluirContrato(true); }}>Excluir contrato</MenuItem>
@@ -89,7 +99,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
       {/* Destaque: quanto cobrar */}
       <Card className="p-4">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-semibold text-text-secondary">{pago ? 'Contrato quitado' : 'Devido hoje'}</span>
+          <span className="text-sm font-semibold text-text-secondary">{pago ? (aluguel ? 'Aluguel encerrado' : 'Contrato quitado') : 'Devido hoje'}</span>
           <Badge variant={st.variant}>{st.label}</Badge>
         </div>
         {!pago && (
@@ -99,7 +109,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
               {c.devido.multa > 0 && <span>Multa <b className="text-danger">{formatCurrency(c.devido.multa)}</b></span>}
               {c.devido.acrescimo > 0 && <span>Restante anterior <b>{formatCurrency(c.devido.acrescimo)}</b></span>}
               {parcelado
-                ? <span>{c.devido.qtdParcelas > 1 ? `${c.devido.qtdParcelas} parcelas` : 'Parcela'} <b>{formatCurrency(c.devido.parcelas)}</b></span>
+                ? <span>{c.devido.qtdParcelas > 1 ? `${c.devido.qtdParcelas} ${aluguel ? 'aluguéis' : 'parcelas'}` : (aluguel ? 'Aluguel' : 'Parcela')} <b>{formatCurrency(c.devido.parcelas)}</b></span>
                 : <span>Juros <b>{formatCurrency(c.devido.juros)}</b></span>}
               <span>Venc. <b>{formatDate(c.dataVencimento)}</b></span>
             </div>
@@ -129,10 +139,23 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
 
       <SectionTitle>Contrato</SectionTitle>
       <Card className="px-4 py-2">
-        <Row label="Saldo devedor" value={formatCurrency(c.saldo)} strong />
-        {!pago && <Row label="Para quitar hoje" value={formatCurrency(c.quitacao)} />}
-        <Row label="Valor emprestado" value={formatCurrency(c.valorPrincipalInicial || (parcelado ? 0 : c.valorPrincipal))} />
-        {parcelado ? (
+        {aluguel ? (
+          <>
+            <Row label={ROTULO_ITEM[c.itemTipo] || 'Item'} value={c.itemDescricao || '—'} strong />
+            <Row label="Aluguel" value={`${formatCurrency(c.valorParcela)} ${ROTULO_FREQ[c.frequencia] || ''}`} />
+            <Row label="Em aberto (vencido)" value={formatCurrency(c.saldo)} tone={c.saldo > 0 ? 'danger' : 'default'} />
+            <Row label="Períodos pagos" value={int(c.totalParcelas) > 0 ? `${int(c.parcelasPagas)} de ${int(c.totalParcelas)}` : `${int(c.parcelasPagas)} (sem prazo)`} />
+            {num(c.pagoParcelaAtual) > 0 && <Row label="Já pago do aluguel atual" value={formatCurrency(c.pagoParcelaAtual)} />}
+            {num(c.caucao) > 0 && <Row label="Caução" value={formatCurrency(c.caucao)} />}
+          </>
+        ) : (
+          <>
+            <Row label="Saldo devedor" value={formatCurrency(c.saldo)} strong />
+            {!pago && <Row label="Para quitar hoje" value={formatCurrency(c.quitacao)} />}
+            <Row label="Valor emprestado" value={formatCurrency(c.valorPrincipalInicial || (parcelado ? 0 : c.valorPrincipal))} />
+          </>
+        )}
+        {aluguel ? null : parcelado ? (
           <>
             <Row label="Parcelas" value={`${int(c.parcelasPagas)} de ${int(c.totalParcelas)} pagas`} />
             <Row label="Valor da parcela" value={formatCurrency(c.valorParcela)} />
@@ -210,6 +233,40 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
             (só o último pagamento pode ser desfeito). Depois ajuste o contrato em <b>Editar</b>.
           </p>
         ))}
+      </Modal>
+
+      <Modal
+        isOpen={encerrar}
+        onClose={() => setEncerrar(false)}
+        title={c.encerrado ? 'Reabrir aluguel?' : 'Encerrar aluguel?'}
+        footer={(
+          <>
+            <Button variant="ghost" className="flex-1" onClick={() => setEncerrar(false)}>Cancelar</Button>
+            <Button className="flex-1" loading={ocupado} onClick={async () => {
+              setOcupado(true);
+              try {
+                await editarEmprestimo(c.id, c.encerrado
+                  ? { encerrado: false, status: 'ativo', dataEncerramento: null }
+                  : {
+                    encerrado: true,
+                    // o que já venceu e não foi pago continua devido depois de encerrar
+                    acrescimoProximo: c.saldo,
+                    pagoParcelaAtual: 0,
+                    status: c.saldo > 0 ? 'atrasado' : 'pago',
+                    dataEncerramento: new Date().toISOString(),
+                  });
+                toast.success(c.encerrado ? 'Aluguel reaberto.' : 'Aluguel encerrado.');
+                setEncerrar(false);
+              } catch (e) { toast.error(e.message); } finally { setOcupado(false); }
+            }}>Confirmar</Button>
+          </>
+        )}
+      >
+        <p className="text-sm text-text-secondary">
+          {c.encerrado
+            ? 'O aluguel volta a gerar cobrança a partir do próximo vencimento.'
+            : <>O aluguel para de gerar novas cobranças. {c.saldo > 0 && <>Os <b>{formatCurrency(c.saldo)}</b> que já venceram continuam em aberto para cobrar.</>}</>}
+        </p>
       </Modal>
 
       <Modal

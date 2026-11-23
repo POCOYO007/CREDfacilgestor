@@ -48,7 +48,7 @@ export const ordemDeCobranca = (a, b) => {
 };
 
 export const statusVisual = (c) => {
-  if (c.status === 'pago') return { label: 'Quitado', variant: 'success' };
+  if (c.status === 'pago') return { label: c.modalidade === 'aluguel' ? 'Encerrado' : 'Quitado', variant: c.modalidade === 'aluguel' ? 'neutral' : 'success' };
   if (c.status === 'atrasado') return { label: `${c.diasAtraso}d atraso`, variant: 'danger' };
   if (c.venceHoje) return { label: 'Vence hoje', variant: 'warning' };
   if (c.diasAtraso > 0) return { label: 'Carência', variant: 'warning' };

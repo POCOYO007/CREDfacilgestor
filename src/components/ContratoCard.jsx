@@ -21,9 +21,13 @@ export const linkMapa = (cliente) => {
   return q ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}` : null;
 };
 
-export const descricaoContrato = (c) => (ehParcelado(c)
-  ? `Parcelado ${int(c.parcelasPagas)}/${int(c.totalParcelas)}`
-  : `Juros ${c.taxaJuros || 0}%`);
+export const descricaoContrato = (c) => {
+  if (c.modalidade === 'aluguel') {
+    const prazo = int(c.totalParcelas) > 0 ? ` · ${int(c.parcelasPagas)}/${int(c.totalParcelas)}` : '';
+    return `Aluguel${c.itemDescricao ? `: ${c.itemDescricao}` : ''}${prazo}`;
+  }
+  return ehParcelado(c) ? `Parcelado ${int(c.parcelasPagas)}/${int(c.totalParcelas)}` : `Juros ${c.taxaJuros || 0}%`;
+};
 
 /**
  * Cartão de contrato para listas.
@@ -48,9 +52,9 @@ export default function ContratoCard({ contrato: c, to, onReceber, config, mostr
       </div>
       <div className="text-right shrink-0">
         <p className={cn('font-extrabold tabular-nums', c.status === 'atrasado' && 'text-danger')}>
-          {formatCurrency(pago ? c.valorPrincipalInicial || 0 : c.devido.total)}
+          {formatCurrency(pago ? (c.modalidade === 'aluguel' ? c.valorParcela : c.valorPrincipalInicial) || 0 : c.devido.total)}
         </p>
-        <p className="text-[12px] text-text-muted mt-0.5">{pago ? 'quitado' : `vence ${formatDate(c.dataVencimento).slice(0, 5)}`}</p>
+        <p className="text-[12px] text-text-muted mt-0.5">{pago ? (c.modalidade === 'aluguel' ? 'encerrado' : 'quitado') : `vence ${formatDate(c.dataVencimento).slice(0, 5)}`}</p>
       </div>
       {to && !onReceber && <ChevronRight className="w-4 h-4 text-text-muted self-center -mr-1" />}
     </div>

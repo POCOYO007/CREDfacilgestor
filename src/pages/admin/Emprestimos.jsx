@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
+import { linkContrato } from '../../domain/emprestimo';
 import { useContratos, ordemDeCobranca } from '../../hooks/useCarteira';
 import { PageHeader, SearchInput, Chips, Select, Card, Empty } from '../../components/ui';
 import ContratoCard from '../../components/ContratoCard';
@@ -27,6 +28,7 @@ export default function Emprestimos() {
   const [cobrador, setCobrador] = useState('');
 
   const base = useMemo(() => contratos.filter((c) => {
+    if (c.modalidade === 'aluguel') return false; // aluguéis têm aba própria
     if (cobrador === '_gestor' ? !!c.cobrador : cobrador && c.cobrador?.id !== cobrador) return false;
     if (!busca) return true;
     const t = busca.toLowerCase();
@@ -75,7 +77,7 @@ export default function Emprestimos() {
         <Card><Empty icon={<FileText className="w-6 h-6" />} title="Nenhum contrato aqui" text={filtro === 'cobrar' ? 'Nada atrasado ou vencendo hoje.' : 'Tente outro filtro.'} /></Card>
       ) : (
         <div className="space-y-2">
-          {lista.map((c) => <ContratoCard key={c.id} contrato={c} to={`/app/emprestimos/${c.id}`} config={config} mostrarCobrador />)}
+          {lista.map((c) => <ContratoCard key={c.id} contrato={c} to={linkContrato(c)} config={config} mostrarCobrador />)}
         </div>
       )}
     </div>

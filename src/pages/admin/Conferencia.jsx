@@ -10,7 +10,7 @@ import { parseData } from '../../domain/emprestimo';
 import { PageHeader, Card, Row, Badge, Empty, SectionTitle } from '../../components/ui';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
-const ROTULOS = [['juros', 'Juros'], ['capital', 'Capital'], ['parcela', 'Parcelas (contratos antigos)'], ['multa', 'Multa']];
+const ROTULOS = [['juros', 'Juros'], ['capital', 'Capital'], ['parcela', 'Parcelas (contratos antigos)'], ['aluguel', 'Aluguéis'], ['multa', 'Multa']];
 const quando = (iso, soHora) => {
   const d = parseData(iso);
   if (!d) return '';

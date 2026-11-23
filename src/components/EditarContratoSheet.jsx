@@ -47,6 +47,9 @@ export default function EditarContratoSheet({ isOpen, onClose, contrato }) {
       taxaJuros: String(contrato.taxaJuros ?? ''),
       abatimentoJuros: String(contrato.abatimentoJuros ?? 0),
       acrescimoProximo: String(contrato.acrescimoProximo ?? 0),
+      // aluguel
+      itemDescricao: contrato.itemDescricao || '',
+      caucao: String(contrato.caucao ?? 0),
       // multa
       migrar: true,
       tipoMulta: m.tipo,
@@ -57,6 +60,7 @@ export default function EditarContratoSheet({ isOpen, onClose, contrato }) {
 
   if (!contrato || !f) return null;
   const parcelado = ehParcelado(contrato);
+  const aluguel = contrato.modalidade === 'aluguel';
   const antigo = !ehRegraNova(contrato);
 
   const salvar = async () => {
@@ -73,8 +77,12 @@ export default function EditarContratoSheet({ isOpen, onClose, contrato }) {
     if (parcelado) {
       const total = int(f.totalParcelas);
       const pagas = int(f.parcelasPagas);
-      if (!(total > 0) || !(num(f.valorParcela) > 0)) { toast.error('Informe parcelas e valor da parcela.'); return; }
-      if (pagas > total) { toast.error('Parcelas pagas não pode passar do total.'); return; }
+      if (aluguel) {
+        if (!(num(f.valorParcela) > 0)) { toast.error('Informe o valor do aluguel.'); return; }
+        if (!f.itemDescricao.trim()) { toast.error('Descreva o item alugado.'); return; }
+        Object.assign(mudancas, { itemDescricao: f.itemDescricao.trim(), caucao: round2(f.caucao) });
+      } else if (!(total > 0) || !(num(f.valorParcela) > 0)) { toast.error('Informe parcelas e valor da parcela.'); return; }
+      if (total > 0 && pagas > total) { toast.error('Parcelas pagas não pode passar do total.'); return; }
       Object.assign(mudancas, {
         valorParcela: round2(f.valorParcela), totalParcelas: total, parcelasPagas: pagas,
         pagoParcelaAtual: round2(Math.min(num(f.pagoParcelaAtual), num(f.valorParcela))),
@@ -98,7 +106,7 @@ export default function EditarContratoSheet({ isOpen, onClose, contrato }) {
     // A multa em aberto fica exatamente no valor informado, e daqui pra frente segue a regra do contrato.
     Object.assign(depois, conservarMulta(Math.max(0, round2(f.multaHoje)), depois));
     depois.saldoDevedor = saldoDevedor(depois);
-    if (parcelado) depois.valorPrincipal = depois.saldoDevedor;
+    if (parcelado) depois.valorPrincipal = aluguel ? 0 : depois.saldoDevedor;
     depois.status = calcularStatus(depois);
 
     const campos = [
@@ -143,7 +151,20 @@ export default function EditarContratoSheet({ isOpen, onClose, contrato }) {
           {f.frequencia === 'dia_especifico' && <Input label="Dia do mês" type="number" min="1" max="31" value={f.diaVencimento} onChange={set('diaVencimento')} />}
         </div>
 
-        {parcelado ? (
+        {aluguel ? (
+          <>
+            <Input label="Item alugado" value={f.itemDescricao} onChange={set('itemDescricao')} maxLength={200} />
+            <div className="grid grid-cols-2 gap-3">
+              <MoneyInput label="Valor do aluguel" value={f.valorParcela} onChange={set('valorParcela')} />
+              <Input label="Nº de períodos" type="number" min="0" value={f.totalParcelas} onChange={set('totalParcelas')} hint="0 = sem prazo" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Input label="Períodos pagos" type="number" min="0" value={f.parcelasPagas} onChange={set('parcelasPagas')} />
+              <MoneyInput label="Já pago do atual" value={f.pagoParcelaAtual} onChange={set('pagoParcelaAtual')} />
+            </div>
+            <MoneyInput label="Caução" value={f.caucao} onChange={set('caucao')} />
+          </>
+        ) : parcelado ? (
           <>
             <div className="grid grid-cols-2 gap-3">
               <Input label="Total de parcelas" type="number" min="1" value={f.totalParcelas} onChange={set('totalParcelas')} />

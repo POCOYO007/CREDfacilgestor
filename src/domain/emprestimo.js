@@ -111,7 +111,21 @@ export const proximoVencimento = (dataVencimento, frequencia, numPeriodos = 1, d
 };
 
 // ---------- contrato ----------
-export const ehParcelado = (emp) => emp?.modalidade === 'parcelado';
+/** Aluguel se comporta como parcela fixa (o aluguel de cada período), com prazo opcional. */
+export const ehAluguel = (emp) => emp?.modalidade === 'aluguel';
+export const ehParcelado = (emp) => emp?.modalidade === 'parcelado' || ehAluguel(emp);
+/** Total de parcelas: aluguel sem prazo = infinito. */
+export const totalParcelas = (emp) => {
+  if (ehAluguel(emp) && emp.encerrado) return int(emp.parcelasPagas); // encerrado: não gera mais aluguel
+  return ehAluguel(emp) && !(int(emp.totalParcelas) > 0) ? Infinity : int(emp.totalParcelas);
+};
+
+export const TIPOS_ITEM_ALUGUEL = [
+  { value: 'carro', label: 'Carro' },
+  { value: 'moto', label: 'Moto' },
+  { value: 'casa', label: 'Casa / imóvel' },
+  { value: 'outro', label: 'Outro' },
+];
 export const ehRegraNova = (emp) => int(emp?.versaoRegra) >= 2;
 
 export const juroPorPeriodo = (emp) => (ehParcelado(emp) ? 0 : round2(num(emp.valorPrincipal) * num(emp.taxaJuros) / 100));
@@ -122,10 +136,23 @@ export const periodosEmAberto = (emp, ref = new Date()) => {
   return Math.max(1, Math.ceil(dias / diasDoPeriodo(emp)));
 };
 
-export const parcelasRestantes = (emp) => Math.max(0, int(emp.totalParcelas) - int(emp.parcelasPagas));
+export const parcelasRestantes = (emp) => Math.max(0, totalParcelas(emp) - int(emp.parcelasPagas));
+
+/** Aluguel: só o que já venceu e não foi pago (sem multa). Aluguéis futuros não contam como dívida. */
+export function saldoAluguelEmAberto(emp, ref = new Date()) {
+  if (emp.encerrado) return round2(Math.max(0, num(emp.acrescimoProximo)));
+  const venc = parseData(emp.dataVencimento);
+  if (!venc) return 0;
+  const dias = diffDias(venc, ref);
+  // vencimento hoje ou já passou: conta o período atual + os que já passaram
+  const vencidos = dias < 0 ? 0 : Math.floor(dias / diasDoPeriodo(emp)) + 1;
+  const qtd = Math.min(vencidos, parcelasRestantes(emp));
+  return round2(Math.max(0, qtd * num(emp.valorParcela) - (qtd > 0 ? num(emp.pagoParcelaAtual) : 0) + num(emp.acrescimoProximo)));
+}
 
 /** Saldo devedor (o que falta pagar, sem multa e sem juros futuros). */
 export const saldoDevedor = (emp) => {
+  if (ehAluguel(emp)) return saldoAluguelEmAberto(emp);
   if (ehParcelado(emp)) {
     const resto = parcelasRestantes(emp) * num(emp.valorParcela) - num(emp.pagoParcelaAtual) + num(emp.acrescimoProximo);
     return round2(Math.max(0, resto));
@@ -202,6 +229,11 @@ export const valorQuitacao = (emp, ref = new Date()) => {
 };
 
 export const calcularStatus = (emp, ref = new Date()) => {
+  if (ehAluguel(emp)) {
+    if (emp.encerrado) return num(emp.acrescimoProximo) > EPS ? 'atrasado' : 'pago';
+    if (int(emp.parcelasPagas) >= totalParcelas(emp) && num(emp.acrescimoProximo) <= EPS) return 'pago';
+    return estaAtrasado(emp, ref) ? 'atrasado' : 'ativo';
+  }
   if (ehParcelado(emp)) {
     if (int(emp.parcelasPagas) >= Math.max(1, int(emp.totalParcelas)) && num(emp.acrescimoProximo) <= EPS) return 'pago';
   } else if (num(emp.valorPrincipal) <= EPS) {
@@ -230,19 +262,24 @@ export const conservarMulta = (devidaAntes, depois, ref = new Date()) => {
 };
 
 /** Descrição legível da multa do contrato. */
+const reais = (v) => `R$ ${num(v).toFixed(2).replace('.', ',')}`;
+
+/** Endereço da tela do contrato no painel do gestor (aluguel fica na aba Aluguéis). */
+export const linkContrato = (c) => (c?.modalidade === 'aluguel' ? `/app/alugueis/${c.id}` : `/app/emprestimos/${c.id}`);
+
 export const descreverMulta = (emp) => {
   if (!ehRegraNova(emp)) {
     const partes = [];
-    if (num(emp.multaFixa)) partes.push(`R$ ${num(emp.multaFixa).toFixed(2)} fixa`);
+    if (num(emp.multaFixa)) partes.push(`${reais(emp.multaFixa)} fixa`);
     if (num(emp.multaPercentual)) partes.push(`${num(emp.multaPercentual)}%`);
-    if (num(emp.multaDiaria)) partes.push(`R$ ${num(emp.multaDiaria).toFixed(2)}/dia`);
+    if (num(emp.multaDiaria)) partes.push(`${reais(emp.multaDiaria)}/dia`);
     return partes.length ? `${partes.join(' + ')} (regra antiga)` : 'Sem multa (regra antiga)';
   }
   const v = num(emp.valorMulta);
   switch (emp.tipoMulta) {
-    case 'atraso_diaria': return `R$ ${v.toFixed(2)} por dia de atraso`;
-    case 'parcela_percentual': return `${v}% por parcela atrasada`;
-    case 'parcela_fixa': return `R$ ${v.toFixed(2)} por parcela atrasada`;
+    case 'atraso_diaria': return `${reais(v)} por dia de atraso`;
+    case 'parcela_percentual': return `${String(v).replace('.', ',')}% por ${ehAluguel(emp) ? 'aluguel' : 'parcela'} atrasad${ehAluguel(emp) ? 'o' : 'a'}`;
+    case 'parcela_fixa': return `${reais(v)} por ${ehAluguel(emp) ? 'aluguel atrasado' : 'parcela atrasada'}`;
     default: return 'Sem multa';
   }
 };
@@ -307,6 +344,50 @@ export const montarNovoEmprestimo = (form, { clienteId, cobradorId }) => {
     abatimentoJuros: 0,
     pagoParcelaAtual: 0,
     acrescimoProximo: 0,
+    status: 'ativo',
+  };
+};
+
+/** Monta o documento de um contrato de aluguel novo. */
+export const montarNovoAluguel = (form, { clienteId, cobradorId }) => {
+  const valor = num(form.valorParcela);
+  if (!(valor > 0)) throw new Error('Informe o valor do aluguel.');
+  if (!String(form.itemDescricao || '').trim()) throw new Error('Descreva o que está sendo alugado.');
+  const periodos = form.prazo === 'fixo' ? int(form.totalParcelas) : 0;
+  if (form.prazo === 'fixo' && !(periodos > 0)) throw new Error('Informe quantos períodos dura o aluguel.');
+  const tipoMulta = form.tipoMulta || 'nenhuma';
+  const valorMulta = tipoMulta === 'nenhuma' ? 0 : num(form.valorMulta);
+  if (tipoMulta !== 'nenhuma' && !(valorMulta > 0)) throw new Error('Informe o valor da multa.');
+  const inicio = parseData(form.dataInicio) || new Date();
+  const primeiroVenc = form.primeiroVencimento ? parseData(form.primeiroVencimento) : inicio;
+  return {
+    modalidade: 'aluguel',
+    versaoRegra: VERSAO_REGRA_ATUAL,
+    clienteId,
+    cobradorId: cobradorId || '',
+    itemTipo: form.itemTipo || 'outro',
+    itemDescricao: String(form.itemDescricao).trim(),
+    caucao: round2(form.caucao),
+    valorParcela: round2(valor),
+    totalParcelas: periodos,
+    parcelasPagas: 0,
+    valorPrincipal: 0,
+    valorPrincipalInicial: 0,
+    saldoDevedor: 0,
+    taxaJuros: 0,
+    frequencia: form.frequencia || 'mensal',
+    diaVencimento: form.frequencia === 'dia_especifico' ? int(form.diaVencimento) || primeiroVenc.getDate() : null,
+    dataInicio: inicio.toISOString(),
+    dataVencimento: primeiroVenc.toISOString(),
+    carenciaDias: int(form.carenciaDias),
+    tipoMulta,
+    valorMulta,
+    multaAcumulada: 0,
+    multaAbatida: 0,
+    abatimentoJuros: 0,
+    pagoParcelaAtual: 0,
+    acrescimoProximo: 0,
+    encerrado: false,
     status: 'ativo',
   };
 };

@@ -14,6 +14,7 @@ const Conferencia = lazy(() => import('./pages/admin/Conferencia'));
 const Clientes = lazy(() => import('./pages/admin/Clientes'));
 const ClienteDetalhe = lazy(() => import('./pages/admin/ClienteDetalhe'));
 const Emprestimos = lazy(() => import('./pages/admin/Emprestimos'));
+const Alugueis = lazy(() => import('./pages/admin/Alugueis'));
 const EmprestimoDetalhe = lazy(() => import('./pages/admin/EmprestimoDetalhe'));
 const Equipe = lazy(() => import('./pages/admin/Equipe'));
 const AcertoCobrador = lazy(() => import('./pages/admin/AcertoCobrador'));
@@ -159,6 +160,8 @@ export default function App() {
             <Route path="clientes/:id" element={<ClienteDetalhe />} />
             <Route path="emprestimos" element={<Emprestimos />} />
             <Route path="emprestimos/:id" element={<EmprestimoDetalhe />} />
+            <Route path="alugueis" element={<Alugueis />} />
+            <Route path="alugueis/:id" element={<EmprestimoDetalhe />} />
             <Route path="equipe" element={<Equipe />} />
             <Route path="equipe/:id/acerto" element={<AcertoCobrador />} />
             <Route path="configuracoes" element={<Configuracoes />} />
