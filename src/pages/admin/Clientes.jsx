@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { UserPlus, Users, ChevronRight } from 'lucide-react';
+import { UserPlus, Users, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
-import { useContratos } from '../../hooks/useCarteira';
-import { PageHeader, SearchInput, Card, Empty, Button, Badge, Chips } from '../../components/ui';
+import { useContratos, ordenarClientes, ORDENS_CLIENTE } from '../../hooks/useCarteira';
+import { PageHeader, SearchInput, Card, Empty, Button, Badge, Chips, Select } from '../../components/ui';
 import ClienteForm from '../../components/ClienteForm';
 import { formatCurrency } from '../../utils/formatters';
 
@@ -30,7 +30,8 @@ export const filtrarClientes = (lista, busca) => {
   const nums = busca.replace(/\D/g, '');
   return lista.filter((c) => (c.nome || '').toLowerCase().includes(t)
     || (nums && ((c.cpfCnpj || '').replace(/\D/g, '').includes(nums) || (c.telefone || '').replace(/\D/g, '').includes(nums)))
-    || (c.endereco?.bairro || '').toLowerCase().includes(t));
+    || (c.endereco?.bairro || '').toLowerCase().includes(t)
+    || (c.endereco?.rua || '').toLowerCase().includes(t));
 };
 
 export default function Clientes() {
@@ -39,23 +40,65 @@ export default function Clientes() {
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState('todos');
   const [novo, setNovo] = useState(false);
+  const [abrirFiltros, setAbrirFiltros] = useState(false);
+  const [ordem, setOrdem] = useState('az');
+  const [bairro, setBairro] = useState('');
+  const [letra, setLetra] = useState('');
 
-  const lista = filtrarClientes(resumo, busca).filter((c) => (filtro === 'ativos' ? c.ativos > 0 : filtro === 'atrasados' ? c.atrasado : true));
+  const bairros = useMemo(() => [...new Set(resumo.map((c) => (c.endereco?.bairro || '').trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })), [resumo]);
+  const letras = useMemo(() => [...new Set(resumo.map((c) => (c.nome || '').trim().charAt(0).toUpperCase()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'pt-BR')), [resumo]);
+
+  const lista = ordenarClientes(
+    filtrarClientes(resumo, busca)
+      .filter((c) => (filtro === 'ativos' ? c.ativos > 0 : filtro === 'semContrato' ? c.ativos === 0 : filtro === 'atrasados' ? c.atrasado : true))
+      .filter((c) => !bairro || (c.endereco?.bairro || '').trim() === bairro)
+      .filter((c) => !letra || (c.nome || '').trim().charAt(0).toUpperCase() === letra),
+    ordem,
+  );
+  const filtrosAtivos = [ordem !== 'az', bairro].filter(Boolean).length;
 
   return (
     <div>
       <PageHeader title="Clientes" subtitle={`${resumo.length} cadastrado(s)`} actions={<Button size="sm" onClick={() => setNovo(true)}><UserPlus className="w-4 h-4" /> Novo</Button>} />
       <div className="space-y-3 mb-4">
-        <SearchInput value={busca} onChange={setBusca} placeholder="Nome, CPF, telefone ou bairro" />
+        <div className="flex gap-2">
+          <SearchInput value={busca} onChange={setBusca} placeholder="Nome, CPF, telefone, rua ou bairro" className="flex-1" />
+          <Button variant={filtrosAtivos ? 'primary' : 'outline'} className="h-11 px-3 shrink-0" onClick={() => setAbrirFiltros((v) => !v)} aria-label="Filtros">
+            <SlidersHorizontal className="w-5 h-5" />{filtrosAtivos ? <span className="text-sm">{filtrosAtivos}</span> : null}
+          </Button>
+        </div>
         <Chips value={filtro} onChange={setFiltro} options={[
           { value: 'todos', label: 'Todos', count: resumo.length },
           { value: 'ativos', label: 'Com contrato ativo', count: resumo.filter((c) => c.ativos > 0).length },
           { value: 'atrasados', label: 'Em atraso', count: resumo.filter((c) => c.atrasado).length, alert: true },
+          { value: 'semContrato', label: 'Sem contrato', count: resumo.filter((c) => c.ativos === 0).length },
         ]} />
+        {abrirFiltros && (
+          <Card className="p-3.5 space-y-3">
+            <Select label="Ordenar por" value={ordem} onChange={(e) => setOrdem(e.target.value)} options={ORDENS_CLIENTE} />
+            {bairros.length > 0 && (
+              <Select label="Bairro" value={bairro} onChange={(e) => setBairro(e.target.value)}>
+                <option value="">Todos os bairros</option>
+                {bairros.map((b) => <option key={b} value={b}>{b}</option>)}
+              </Select>
+            )}
+            {filtrosAtivos > 0 && <Button variant="ghost" size="sm" block onClick={() => { setOrdem('az'); setBairro(''); }}>Limpar filtros</Button>}
+          </Card>
+        )}
+        {letras.length > 3 && (
+          <div className="flex gap-1 overflow-x-auto no-scrollbar -mx-4 px-4">
+            {letras.map((l) => (
+              <button key={l} type="button" onClick={() => setLetra((x) => (x === l ? '' : l))}
+                className={`shrink-0 w-8 h-8 rounded-lg text-[13px] font-bold ${letra === l ? 'bg-text-primary text-brand-surface' : 'bg-brand-surface border border-border-subtle text-text-secondary'}`}>{l}</button>
+            ))}
+          </div>
+        )}
       </div>
 
       {lista.length === 0 ? (
-        <Card><Empty icon={<Users className="w-6 h-6" />} title={busca ? 'Nenhum cliente encontrado' : 'Nenhum cliente ainda'} action={<Button onClick={() => setNovo(true)}>Cadastrar cliente</Button>} /></Card>
+        <Card><Empty icon={<Users className="w-6 h-6" />} title={resumo.length ? 'Nenhum cliente encontrado' : 'Nenhum cliente ainda'} action={<Button onClick={() => setNovo(true)}>Cadastrar cliente</Button>} /></Card>
       ) : (
         <Card className="divide-y divide-border-subtle">
           {lista.map((c) => (
