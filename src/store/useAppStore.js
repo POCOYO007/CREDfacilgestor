@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { db, auth, criarLoginCobrador, emailDoUsuario } from '../lib/firebase';
 import {
-  collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, writeBatch, deleteField,
+  collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc, writeBatch, deleteField, arrayUnion,
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { fotografarContrato } from '../domain/pagamento';
+import { aplicarCarenciaAluguel } from '../domain/emprestimo';
 
 const BATCH_LIMIT = 450; // abaixo do limite de 500 operações por batch
 
@@ -188,6 +189,25 @@ export const useAppStore = create((set, get) => {
     editarEmprestimo: (id, dados) => gravar(OperationType.UPDATE, caminho(`emprestimos/${id}`), () => {
       const { id: _ignorado, ...limpo } = dados;
       return updateDoc(doc(db, caminho(`emprestimos/${id}`)), { ...limpo, editadoEm: agora() });
+    }),
+
+    /** Carência / pausa no aluguel: empurra o vencimento sem cobrar os dias parados e registra no histórico. */
+    darCarenciaAluguel: (emp, dias, motivo, perdoarMulta) => gravar(OperationType.UPDATE, caminho(`emprestimos/${emp.id}`), () => {
+      const mudancas = aplicarCarenciaAluguel(emp, dias, new Date(), { perdoarMulta });
+      return updateDoc(doc(db, caminho(`emprestimos/${emp.id}`)), {
+        ...mudancas,
+        ultimoRecebimentoId: null, // excluir um pagamento antigo não desfaz a carência
+        carencias: arrayUnion({
+          dias: Number(dias),
+          motivo: String(motivo || '').slice(0, 200),
+          vencimentoAntes: emp.dataVencimento,
+          vencimentoDepois: mudancas.dataVencimento,
+          multaPerdoada: !!perdoarMulta,
+          data: agora(),
+          por: get().usuarioAtual?.nome || '',
+        }),
+        editadoEm: agora(),
+      });
     }),
 
     removerEmprestimo: (id) => gravar(OperationType.DELETE, caminho(`emprestimos/${id}`), () => {

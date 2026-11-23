@@ -298,3 +298,19 @@ test('aluguel encerrado com dívida continua cobrável e não gera aluguel novo'
   assert.equal(r.contratoDepois.status, 'pago');
   assert.equal(r.contratoDepois.parcelasPagas, 5);
 });
+
+import { aplicarCarenciaAluguel } from './emprestimo.js';
+test('carência de 7 dias em aluguel semanal atrasado tira 1 aluguel da conta', () => {
+  const emp = aluguel({ dataVencimento: diasAtras(8) }); // 2 semanas vencidas
+  assert.equal(saldoAluguelEmAberto(emp, HOJE), 600);
+  const m = aplicarCarenciaAluguel(emp, 7, HOJE);
+  const depois = { ...emp, ...m };
+  assert.equal(saldoAluguelEmAberto(depois, HOJE), 300);
+  assert.equal(depois.parcelasPagas, 0);
+});
+test('carência mantém a multa que já existia', () => {
+  const emp = aluguel({ dataVencimento: diasAtras(8), tipoMulta: 'parcela_fixa', valorMulta: 30 });
+  assert.equal(multaDevida(emp, HOJE), 60);
+  const depois = { ...emp, ...aplicarCarenciaAluguel(emp, 7, HOJE) };
+  assert.equal(multaDevida(depois, HOJE), 60);
+});

@@ -391,3 +391,28 @@ export const montarNovoAluguel = (form, { clienteId, cobradorId }) => {
     status: 'ativo',
   };
 };
+
+/**
+ * Carência / pausa de aluguel: o cliente ficou X dias sem usar o bem.
+ * Empurra o vencimento X dias para frente sem contar pagamento — esses dias
+ * não são cobrados. A multa que já existia fica como estava (não some, não duplica).
+ * Devolve só os campos que mudam no contrato.
+ */
+export const aplicarCarenciaAluguel = (emp, dias, ref = new Date(), { perdoarMulta = false } = {}) => {
+  const n = int(dias);
+  if (!(n > 0)) throw new Error('Informe quantos dias de carência.');
+  if (n > 365) throw new Error('Carência máxima de 365 dias por vez.');
+  const venc = parseData(emp.dataVencimento) || new Date(ref);
+  const novoVenc = new Date(venc);
+  novoVenc.setDate(novoVenc.getDate() + n);
+  const depois = { ...emp, dataVencimento: novoVenc.toISOString() };
+  const multa = conservarMulta(perdoarMulta ? 0 : multaDevida(emp, ref), depois, ref);
+  Object.assign(depois, multa);
+  return {
+    dataVencimento: depois.dataVencimento,
+    multaAcumulada: multa.multaAcumulada,
+    multaAbatida: multa.multaAbatida,
+    status: calcularStatus(depois, ref),
+    saldoDevedor: saldoDevedor(depois),
+  };
+};
