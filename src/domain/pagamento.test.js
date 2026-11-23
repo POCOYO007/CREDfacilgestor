@@ -314,3 +314,19 @@ test('carência mantém a multa que já existia', () => {
   const depois = { ...emp, ...aplicarCarenciaAluguel(emp, 7, HOJE) };
   assert.equal(multaDevida(depois, HOJE), 60);
 });
+
+import { aplicarCarencia } from './emprestimo.js';
+test('carência em empréstimo de juros: 2 meses atrasado, adia 30 dias → deve 1 juro', () => {
+  const emp = juros({ dataVencimento: diasAtras(40) });
+  assert.equal(devidoAgora(emp, HOJE).juros, 400);
+  const d = { ...emp, ...aplicarCarencia(emp, 30, HOJE) };
+  assert.equal(devidoAgora(d, HOJE).juros, 200);
+  assert.equal(d.valorPrincipal, 1000);
+});
+test('carência em parcelado adia sem mudar o saldo', () => {
+  const emp = parcelado({ dataVencimento: diasAtras(5), tipoMulta: 'parcela_fixa', valorMulta: 20 });
+  const d = { ...emp, ...aplicarCarencia(emp, 10, HOJE, { perdoarMulta: true }) };
+  assert.equal(calcularStatus(d, HOJE), 'ativo');
+  assert.equal(multaDevida(d, HOJE), 0);
+  assert.equal(d.saldoDevedor, 1200);
+});

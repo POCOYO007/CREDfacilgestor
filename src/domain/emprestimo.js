@@ -393,12 +393,15 @@ export const montarNovoAluguel = (form, { clienteId, cobradorId }) => {
 };
 
 /**
- * Carência / pausa de aluguel: o cliente ficou X dias sem usar o bem.
+ * Carência (aluguel ou empréstimo).
+ * Aluguel: o cliente ficou X dias sem usar o bem.
+ * Empréstimo: o gestor adia o vencimento em X dias (os juros do período não
+ * aumentam por isso e a multa não corre nesses dias).
  * Empurra o vencimento X dias para frente sem contar pagamento — esses dias
  * não são cobrados. A multa que já existia fica como estava (não some, não duplica).
  * Devolve só os campos que mudam no contrato.
  */
-export const aplicarCarenciaAluguel = (emp, dias, ref = new Date(), { perdoarMulta = false } = {}) => {
+export const aplicarCarencia = (emp, dias, ref = new Date(), { perdoarMulta = false } = {}) => {
   const n = int(dias);
   if (!(n > 0)) throw new Error('Informe quantos dias de carência.');
   if (n > 365) throw new Error('Carência máxima de 365 dias por vez.');
@@ -416,3 +419,5 @@ export const aplicarCarenciaAluguel = (emp, dias, ref = new Date(), { perdoarMul
     saldoDevedor: saldoDevedor(depois),
   };
 };
+
+export const aplicarCarenciaAluguel = aplicarCarencia;

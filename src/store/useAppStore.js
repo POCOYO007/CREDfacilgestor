@@ -5,7 +5,7 @@ import {
 } from 'firebase/firestore';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { fotografarContrato } from '../domain/pagamento';
-import { aplicarCarenciaAluguel } from '../domain/emprestimo';
+import { aplicarCarencia } from '../domain/emprestimo';
 
 const BATCH_LIMIT = 450; // abaixo do limite de 500 operações por batch
 
@@ -191,9 +191,9 @@ export const useAppStore = create((set, get) => {
       return updateDoc(doc(db, caminho(`emprestimos/${id}`)), { ...limpo, editadoEm: agora() });
     }),
 
-    /** Carência / pausa no aluguel: empurra o vencimento sem cobrar os dias parados e registra no histórico. */
-    darCarenciaAluguel: (emp, dias, motivo, perdoarMulta) => gravar(OperationType.UPDATE, caminho(`emprestimos/${emp.id}`), () => {
-      const mudancas = aplicarCarenciaAluguel(emp, dias, new Date(), { perdoarMulta });
+    /** Carência (aluguel ou empréstimo): empurra o vencimento sem cobrar os dias e registra no histórico. */
+    darCarencia: (emp, dias, motivo, perdoarMulta) => gravar(OperationType.UPDATE, caminho(`emprestimos/${emp.id}`), () => {
+      const mudancas = aplicarCarencia(emp, dias, new Date(), { perdoarMulta });
       return updateDoc(doc(db, caminho(`emprestimos/${emp.id}`)), {
         ...mudancas,
         ultimoRecebimentoId: null, // excluir um pagamento antigo não desfaz a carência

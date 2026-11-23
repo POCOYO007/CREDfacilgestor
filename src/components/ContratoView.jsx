@@ -8,7 +8,7 @@ import EditarContratoSheet from './EditarContratoSheet';
 import { statusVisual } from '../hooks/useCarteira';
 import { descricaoContrato, linkWhatsCobranca, linkMapa } from './ContratoCard';
 import { useAppStore } from '../store/useAppStore';
-import { ehParcelado, descreverMulta, juroPorPeriodo, num, int, parseData, aplicarCarenciaAluguel, saldoAluguelEmAberto, multaDevida, diasDoPeriodo } from '../domain/emprestimo';
+import { ehParcelado, descreverMulta, juroPorPeriodo, num, int, parseData, aplicarCarencia, saldoAluguelEmAberto, multaDevida, diasDoPeriodo, devidoAgora } from '../domain/emprestimo';
 import { composicaoDoRecebimento, TIPOS_PAGAMENTO } from '../domain/pagamento';
 import { formatCurrency, formatDate } from '../utils/formatters';
 
@@ -33,7 +33,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
   const [ocupado, setOcupado] = useState(false);
   const [encerrar, setEncerrar] = useState(false);
   const [carencia, setCarencia] = useState(null); // { dias, motivo, perdoar }
-  const darCarenciaAluguel = useAppStore((s) => s.darCarenciaAluguel);
+  const darCarencia = useAppStore((s) => s.darCarencia);
 
   const historico = useMemo(() => recebimentos
     .filter((r) => r.emprestimoId === c.id)
@@ -137,9 +137,9 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
         {pago && admin && (
           <Button variant="outline" className="mt-3" onClick={() => setEditando(true)}><Pencil className="w-4 h-4" /> Editar contrato</Button>
         )}
-        {aluguel && admin && !c.encerrado && (
-          <Button variant="secondary" block className="mt-2" onClick={() => setCarencia({ dias: String(diasDoPeriodo(c)), motivo: '', perdoar: false })}>
-            <PauseCircle className="w-4 h-4" /> Dar carência (dias sem usar)
+        {admin && !pago && !c.encerrado && (
+          <Button variant="secondary" block className="mt-2" onClick={() => setCarencia({ dias: String(aluguel ? diasDoPeriodo(c) : 7), motivo: '', perdoar: false })}>
+            <PauseCircle className="w-4 h-4" /> {aluguel ? 'Dar carência (dias sem usar)' : 'Dar carência (adiar vencimento)'}
           </Button>
         )}
       </Card>
@@ -182,13 +182,13 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
         <Row label="Início" value={formatDate(c.dataInicio || c.criadoEm)} />
       </Card>
 
-      {aluguel && Array.isArray(c.carencias) && c.carencias.length > 0 && (
+      {Array.isArray(c.carencias) && c.carencias.length > 0 && (
         <>
           <SectionTitle>Carências concedidas ({c.carencias.length})</SectionTitle>
           <Card className="divide-y divide-border-subtle">
             {[...c.carencias].reverse().map((k, i) => (
               <div key={i} className="px-4 py-3">
-                <p className="text-sm font-semibold">{k.dias} dia(s) sem cobrar{k.multaPerdoada ? ' · multa perdoada' : ''}</p>
+                <p className="text-sm font-semibold">{k.dias} dia(s) {aluguel ? 'sem cobrar' : 'de carência'}{k.multaPerdoada ? ' · multa perdoada' : ''}</p>
                 <p className="text-[12px] text-text-secondary">
                   {formatDate(k.data)} · vencimento {formatDate(k.vencimentoAntes)} → {formatDate(k.vencimentoDepois)}{k.motivo ? ` · ${k.motivo}` : ''}{k.por ? ` · por ${k.por}` : ''}
                 </p>
@@ -261,9 +261,9 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
       {carencia && (() => {
         let previa = null;
         try {
-          const m = aplicarCarenciaAluguel(c, carencia.dias, new Date(), { perdoarMulta: carencia.perdoar });
+          const m = aplicarCarencia(c, carencia.dias, new Date(), { perdoarMulta: carencia.perdoar });
           const d = { ...c, ...m };
-          previa = { venc: m.dataVencimento, aberto: saldoAluguelEmAberto(d), multa: multaDevida(d) };
+          previa = { venc: m.dataVencimento, aberto: aluguel ? saldoAluguelEmAberto(d) : devidoAgora(d).total, multa: multaDevida(d) };
         } catch { previa = null; }
         const atalhos = [[7, '1 semana'], [15, '15 dias'], [30, '1 mês']];
         return (
@@ -271,17 +271,21 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
             isOpen
             onClose={() => setCarencia(null)}
             title="Dar carência"
-            subtitle={c.itemDescricao}
+            subtitle={aluguel ? c.itemDescricao : c.cliente?.nome}
             footer={<Button size="lg" block loading={ocupado} disabled={!previa} onClick={async () => {
               setOcupado(true);
               try {
-                await darCarenciaAluguel(c, carencia.dias, carencia.motivo, carencia.perdoar);
+                await darCarencia(c, carencia.dias, carencia.motivo, carencia.perdoar);
                 toast.success(`Carência de ${carencia.dias} dia(s) aplicada.`);
                 setCarencia(null);
               } catch (e) { toast.error(e.message); } finally { setOcupado(false); }
             }}>Aplicar carência</Button>}
           >
-            <p className="text-sm text-text-secondary mb-4">Os dias de carência não são cobrados: o vencimento anda para frente e o valor não soma na dívida.</p>
+            <p className="text-sm text-text-secondary mb-4">
+              {aluguel
+                ? 'Os dias de carência não são cobrados: o vencimento anda para frente e o valor não soma na dívida.'
+                : 'O vencimento é adiado: nesses dias não corre multa nem acumula juro de atraso. O valor do contrato continua o mesmo.'}
+            </p>
             <div className="flex gap-2 mb-3">
               {atalhos.map(([d, l]) => (
                 <button key={d} type="button" onClick={() => setCarencia((x) => ({ ...x, dias: String(d) }))}
@@ -290,7 +294,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
             </div>
             <div className="space-y-3">
               <Input label="Dias de carência" type="number" min="1" max="365" inputMode="numeric" value={carencia.dias} onChange={(e) => setCarencia((x) => ({ ...x, dias: e.target.value }))} />
-              <Input label="Motivo (opcional)" value={carencia.motivo} onChange={(e) => setCarencia((x) => ({ ...x, motivo: e.target.value }))} placeholder="Ex.: moto na oficina" maxLength={200} />
+              <Input label="Motivo (opcional)" value={carencia.motivo} onChange={(e) => setCarencia((x) => ({ ...x, motivo: e.target.value }))} placeholder={aluguel ? 'Ex.: moto na oficina' : 'Ex.: cliente pediu prazo'} maxLength={200} />
               {c.multa > 0 && (
                 <label className="flex items-center gap-2 text-sm font-medium">
                   <input type="checkbox" checked={carencia.perdoar} onChange={(e) => setCarencia((x) => ({ ...x, perdoar: e.target.checked }))} className="w-4 h-4 accent-[var(--brand-primary)]" />
@@ -301,7 +305,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
             {previa && (
               <div className="rounded-2xl bg-brand-surface-2 p-3.5 mt-4">
                 <Row label="Vencimento" value={`${formatDate(c.dataVencimento)} → ${formatDate(previa.venc)}`} />
-                <Row label="Em aberto" value={`${formatCurrency(c.saldo)} → ${formatCurrency(previa.aberto)}`} strong />
+                <Row label={aluguel ? 'Em aberto' : 'Devido hoje'} value={`${formatCurrency(aluguel ? c.saldo : c.devido.total)} → ${formatCurrency(previa.aberto)}`} strong />
                 {c.multa > 0 && <Row label="Multa" value={`${formatCurrency(c.multa)} → ${formatCurrency(previa.multa)}`} />}
               </div>
             )}
