@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Info } from 'lucide-react';
 import { Modal, Button, Input, MoneyInput, Select, Row } from './ui';
-import { CamposMulta } from './EmprestimoForm';
+import { CamposMulta, CampoJuros } from './EmprestimoForm';
 import {
   FREQUENCIAS, ehParcelado, ehRegraNova, num, int, round2, hojeISO, parseData, conservarMulta, saldoDevedor,
   calcularStatus, multaDevida, descreverMulta, VERSAO_REGRA_ATUAL,
@@ -156,10 +156,8 @@ export default function EditarContratoSheet({ isOpen, onClose, contrato }) {
           </>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3">
-              <MoneyInput label="Capital em aberto" value={f.valorPrincipal} onChange={set('valorPrincipal')} />
-              <Input label="Juros por período" type="number" step="0.1" min="0" prefix="%" value={f.taxaJuros} onChange={set('taxaJuros')} />
-            </div>
+            <MoneyInput label="Capital em aberto" value={f.valorPrincipal} onChange={set('valorPrincipal')} />
+            <CampoJuros principal={f.valorPrincipal} taxa={f.taxaJuros} onTaxa={(v) => setF((p) => ({ ...p, taxaJuros: v }))} />
             <MoneyInput label="Crédito parcial no juro atual" value={f.abatimentoJuros} onChange={set('abatimentoJuros')} hint="Valor já pago do juro deste período." />
           </>
         )}

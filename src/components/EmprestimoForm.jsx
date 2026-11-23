@@ -23,6 +23,50 @@ const formVazio = (config, cobradorId) => ({
   valorMulta: String(config.valorMultaPadrao ?? config.multaPercentualPadrao ?? 10),
 });
 
+/**
+ * Juros por período: o gestor digita em % OU direto em R$ (ex.: quer receber
+ * R$ 150 de juros sobre R$ 1.000 → 15%). Os dois ficam sincronizados; o
+ * contrato guarda a taxa, então se o capital baixar o juro baixa junto.
+ */
+export function CampoJuros({ principal, taxa, onTaxa, className }) {
+  const [modo, setModo] = useState('pct');
+  const [valorRS, setValorRS] = useState('');
+  const p = num(principal);
+  const jurosEmReais = p > 0 ? (p * num(taxa)) / 100 : 0;
+
+  useEffect(() => {
+    if (modo === 'rs') setValorRS(jurosEmReais ? String(Math.round(jurosEmReais * 100) / 100) : '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modo, p]);
+
+  const mudarReais = (v) => {
+    setValorRS(v);
+    if (p > 0) onTaxa(String(Math.round((num(v) / p) * 100 * 1e6) / 1e6));
+  };
+
+  return (
+    <div className={className}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[13px] font-semibold text-text-secondary">Juros por período</span>
+        <div className="flex rounded-lg bg-brand-surface-2 p-0.5 text-[12px] font-semibold">
+          {[['pct', '%'], ['rs', 'R$']].map(([m, l]) => (
+            <button key={m} type="button" onClick={() => setModo(m)}
+              className={`px-3 h-7 rounded-md ${modo === m ? 'bg-brand-surface shadow-sm text-text-primary' : 'text-text-secondary'}`}>{l}</button>
+          ))}
+        </div>
+      </div>
+      {modo === 'pct' ? (
+        <Input type="number" inputMode="decimal" step="0.1" min="0" prefix="%" value={taxa} onChange={(e) => onTaxa(e.target.value)}
+          hint={p > 0 ? `= ${formatCurrency(jurosEmReais)} por período` : undefined} />
+      ) : (
+        <Input type="number" inputMode="decimal" step="0.01" min="0" prefix="R$" value={valorRS} onChange={(e) => mudarReais(e.target.value)}
+          disabled={!(p > 0)}
+          hint={p > 0 ? `= ${String(Math.round(num(taxa) * 100) / 100).replace('.', ',')}% de ${formatCurrency(p)}` : 'Informe o valor emprestado primeiro.'} />
+      )}
+    </div>
+  );
+}
+
 /** Campos de multa (uma só) — usado aqui e no "Editar contrato". */
 export function CamposMulta({ tipo, valor, onTipo, onValor }) {
   const info = TIPOS_MULTA.find((t) => t.value === tipo);
@@ -116,7 +160,7 @@ export default function EmprestimoForm({ isOpen, onClose, cliente, cobradorFixo,
             <MoneyInput label="Valor da parcela" value={f.valorParcela} onChange={set('valorParcela')} />
           </div>
         ) : (
-          <Input label="Juros por período" type="number" inputMode="decimal" step="0.1" min="0" prefix="%" value={f.taxaJuros} onChange={set('taxaJuros')} />
+          <CampoJuros principal={f.valorPrincipal} taxa={f.taxaJuros} onTaxa={(v) => setF((p) => ({ ...p, taxaJuros: v }))} />
         )}
 
         <div className="grid grid-cols-2 gap-3">
