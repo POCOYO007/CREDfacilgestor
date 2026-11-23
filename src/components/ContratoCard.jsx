@@ -35,7 +35,6 @@ export default function ContratoCard({ contrato: c, to, onReceber, config, mostr
   const pago = c.status === 'pago';
   const whats = onReceber ? linkWhatsCobranca(c, config) : null;
   const mapa = onReceber ? linkMapa(c.cliente) : null;
-  const bairro = c.cliente?.endereco?.bairro;
 
   const corpo = (
     <div className="flex items-start gap-3">
@@ -44,15 +43,8 @@ export default function ContratoCard({ contrato: c, to, onReceber, config, mostr
         pago ? 'bg-success' : c.status === 'atrasado' ? 'bg-danger' : c.venceHoje ? 'bg-warning' : 'bg-border-strong',
       )} />
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="font-bold truncate">{c.cliente?.nome || 'Cliente removido'}</p>
-          <Badge variant={st.variant} className="shrink-0">{st.label}</Badge>
-        </div>
-        <p className="text-[13px] text-text-secondary mt-0.5 truncate">
-          {descricaoContrato(c)}
-          {bairro ? ` · ${bairro}` : ''}
-          {mostrarCobrador && c.cobrador ? ` · ${c.cobrador.nome.split(' ')[0]}` : ''}
-        </p>
+        <p className="font-bold leading-snug break-words">{c.cliente?.nome || 'Cliente removido'}</p>
+        <Badge variant={st.variant} className="mt-1">{st.label}</Badge>
       </div>
       <div className="text-right shrink-0">
         <p className={cn('font-extrabold tabular-nums', c.status === 'atrasado' && 'text-danger')}>
