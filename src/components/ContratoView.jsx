@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { MessageCircle, Pencil, FileDown, Trash2, Undo2, Receipt, MoreHorizontal, Phone, MapPin, Lock, Unlock, PauseCircle } from 'lucide-react';
+import { MessageCircle, Pencil, FileDown, Trash2, Undo2, Receipt, MoreHorizontal, Phone, MapPin, Lock, Unlock, PauseCircle, ScrollText } from 'lucide-react';
 import { PageHeader, Card, Badge, Button, Row, SectionTitle, Modal, Empty, IconButton, Input, cn } from './ui';
 import PagamentoSheet from './PagamentoSheet';
 import EditarContratoSheet from './EditarContratoSheet';
+import ExtratoSheet from './ExtratoSheet';
 import { statusVisual } from '../hooks/useCarteira';
 import { descricaoContrato, linkWhatsCobranca, linkMapa } from './ContratoCard';
 import { useAppStore } from '../store/useAppStore';
@@ -32,6 +33,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
   const [excluirContrato, setExcluirContrato] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [encerrar, setEncerrar] = useState(false);
+  const [extrato, setExtrato] = useState(false);
   const [carencia, setCarencia] = useState(null); // { dias, motivo, perdoar }
   const darCarencia = useAppStore((s) => s.darCarencia);
 
@@ -88,7 +90,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
                       {c.encerrado ? 'Reabrir aluguel' : 'Encerrar aluguel'}
                     </MenuItem>
                   )}
-                  <MenuItem icon={Receipt} onClick={() => { setMenu(false); pdf('gerarExtratoPagamentos', c, c.cliente, historico, config); }}>Extrato em PDF</MenuItem>
+                  <MenuItem icon={ScrollText} onClick={() => { setMenu(false); setExtrato(true); }}>Extrato</MenuItem>
                   {c.cliente && <MenuItem icon={Receipt} onClick={() => navigate(`/app/clientes/${c.cliente.id}`)}>Ver cliente</MenuItem>}
                   <MenuItem icon={Trash2} danger onClick={() => { setMenu(false); setExcluirContrato(true); }}>Excluir contrato</MenuItem>
                 </div>
@@ -137,11 +139,16 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
         {pago && admin && (
           <Button variant="outline" className="mt-3" onClick={() => setEditando(true)}><Pencil className="w-4 h-4" /> Editar contrato</Button>
         )}
-        {admin && !pago && !c.encerrado && (
-          <Button variant="secondary" block className="mt-2" onClick={() => setCarencia({ dias: String(aluguel ? diasDoPeriodo(c) : 7), motivo: '', perdoar: false })}>
-            <PauseCircle className="w-4 h-4" /> {aluguel ? 'Dar carência (dias sem usar)' : 'Dar carência (adiar vencimento)'}
+        <div className="flex gap-2 mt-2">
+          <Button variant="secondary" className="flex-1" onClick={() => setExtrato(true)}>
+            <ScrollText className="w-4 h-4" /> Extrato
           </Button>
-        )}
+          {admin && !pago && !c.encerrado && (
+            <Button variant="secondary" className="flex-1" onClick={() => setCarencia({ dias: String(aluguel ? diasDoPeriodo(c) : 7), motivo: '', perdoar: false })}>
+              <PauseCircle className="w-4 h-4" /> Carência
+            </Button>
+          )}
+        </div>
       </Card>
 
       <SectionTitle>Contrato</SectionTitle>
@@ -198,7 +205,9 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
         </>
       )}
 
-      <SectionTitle>Recebimentos ({historico.length})</SectionTitle>
+      <SectionTitle action={historico.length > 0 && <button type="button" onClick={() => setExtrato(true)} className="text-[13px] font-semibold text-brand-primary">Enviar extrato</button>}>
+        Recebimentos ({historico.length})
+      </SectionTitle>
       {historico.length === 0 ? (
         <Card><Empty icon={<Receipt className="w-6 h-6" />} title="Nenhum pagamento ainda" /></Card>
       ) : (
@@ -236,6 +245,7 @@ export default function ContratoView({ contrato: c, modo = 'admin', cobradorId }
         ehCobrador={!admin}
       />
       {admin && <EditarContratoSheet isOpen={editando} onClose={() => setEditando(false)} contrato={c} />}
+      <ExtratoSheet isOpen={extrato} onClose={() => setExtrato(false)} contrato={c} historico={historico} />
 
       <Modal
         isOpen={!!excluirRec}

@@ -2,7 +2,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { calcularQuitacaoAtualizada } from '../utils/calculosEmprestimo';
-import { descreverMulta } from '../domain/emprestimo';
+import { descreverMulta, saldoDevedor, calcularStatus, devidoAgora, ehParcelado } from '../domain/emprestimo';
+import { composicaoDoRecebimento } from '../domain/pagamento';
 
 export const gerarContratoPDF = (emprestimo = {}, cliente = {}, config = {}) => {
   const doc = new jsPDF();
@@ -18,7 +19,7 @@ export const gerarContratoPDF = (emprestimo = {}, cliente = {}, config = {}) => 
   doc.text(config?.nomeEmpresa || 'Meu Jurista Online', 14, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Tel: ${config?.telefone || ''}  |  ${config?.endereco || ''}`, 14, 28);
+  doc.text([config?.telefone && `Tel: ${config.telefone}`, config?.endereco].filter(Boolean).join('  |  '), 14, 28);
 
   // Título do Documento
   doc.setTextColor(0, 0, 0);
@@ -140,7 +141,7 @@ export const gerarComprovante = (recebimento = {}, emprestimo = {}, cliente = {}
   doc.text(config?.nomeEmpresa || 'Meu Jurista Online', 14, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Tel: ${config?.telefone || ''}  |  ${config?.endereco || ''}`, 14, 28);
+  doc.text([config?.telefone && `Tel: ${config.telefone}`, config?.endereco].filter(Boolean).join('  |  '), 14, 28);
 
   // Título
   doc.setTextColor(0, 0, 0);
@@ -196,7 +197,9 @@ export const gerarComprovante = (recebimento = {}, emprestimo = {}, cliente = {}
   doc.save(`recibo-${receiptId}.pdf`);
 };
 
-export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebimentos = [], config = {}) => {
+export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebimentos = [], config = {}, { retornar = false } = {}) => {
+  const aluguel = emprestimo?.modalidade === 'aluguel';
+  const status = calcularStatus(emprestimo);
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 14;
@@ -210,13 +213,13 @@ export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebiment
   doc.text(config?.nomeEmpresa || 'Meu Jurista Online', 14, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Tel: ${config?.telefone || ''}  |  ${config?.endereco || ''}`, 14, 28);
+  doc.text([config?.telefone && `Tel: ${config.telefone}`, config?.endereco].filter(Boolean).join('  |  '), 14, 28);
 
   // Título
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('EXTRATO DETALHADO DO CLIENTE', 105, 50, { align: 'center' });
+  doc.text(aluguel ? 'EXTRATO DO ALUGUEL' : 'EXTRATO DO CLIENTE', 105, 50, { align: 'center' });
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   
@@ -238,9 +241,18 @@ export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebiment
   doc.text('RESUMO DO CONTRATO', 120, 70);
   doc.line(120, 71, 196, 71);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Capital em Aberto: ${formatCurrency(emprestimo?.valorPrincipal || 0)}`, 120, 78);
-  doc.text(`Status: ${emprestimo?.status === 'atrasado' ? 'EM ATRASO' : 'EM DIA'}`, 120, 83);
-  doc.text(`Próximo Vencimento: ${formatDate(emprestimo?.dataVencimento)}`, 120, 88);
+  if (aluguel) {
+    doc.text(`Item: ${(emprestimo?.itemDescricao || '-').slice(0, 40)}`, 120, 78);
+    doc.text(`Aluguel: ${formatCurrency(emprestimo?.valorParcela || 0)}`, 120, 83);
+  } else if (ehParcelado(emprestimo)) {
+    doc.text(`Saldo devedor: ${formatCurrency(saldoDevedor(emprestimo))}`, 120, 78);
+    doc.text(`Parcelas: ${emprestimo?.parcelasPagas || 0} de ${emprestimo?.totalParcelas || 0} pagas`, 120, 83);
+  } else {
+    doc.text(`Capital em aberto: ${formatCurrency(saldoDevedor(emprestimo))}`, 120, 78);
+    doc.text(`Juros: ${emprestimo?.taxaJuros || 0}% por período`, 120, 83);
+  }
+  doc.text(`Situação: ${status === 'pago' ? (aluguel ? 'ENCERRADO' : 'QUITADO') : status === 'atrasado' ? 'EM ATRASO' : 'EM DIA'}`, 120, 88);
+  if (status !== 'pago') doc.text(`Próximo vencimento: ${formatDate(emprestimo?.dataVencimento)}`, 120, 93);
 
   // Tabela de Histórico
   doc.setFont('helvetica', 'bold');
@@ -254,16 +266,17 @@ export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebiment
     return dataB - dataA;
   });
 
+  const NOMES = { multa: 'multa', juros: 'juros', capital: 'capital', parcela: 'parcela', aluguel: 'aluguel' };
   const tableData = sortedRecs.map(rec => [
     formatDate(rec?.dataRecebimento),
-    rec?.tipo === 'regular' ? 'Principal/Juros' : rec?.tipo === 'multa' ? 'Multa' : rec?.tipo === 'somente_juros' ? 'Juros Acumulados' : 'Quitação',
-    rec?.observacao || '-',
+    { regular: aluguel ? 'Aluguel' : 'Pagamento', multa: 'Multa', somente_juros: 'Só juros', quitacao: 'Quitação' }[rec?.tipo] || 'Pagamento',
+    Object.entries(composicaoDoRecebimento(rec)).map(([k, v]) => `${NOMES[k] || k} ${formatCurrency(v)}`).join(' + ') + (rec?.observacao ? ` · ${rec.observacao}` : ''),
     formatCurrency(rec?.valor || 0)
   ]);
 
   autoTable(doc, {
     startY: 110,
-    head: [['Data', 'Tipo de Lançamento', 'Observação', 'Valor']],
+    head: [['Data', 'Tipo', 'Detalhe', 'Valor']],
     body: tableData,
     theme: 'striped',
     headStyles: { fillColor: [255, 107, 0] },
@@ -283,15 +296,24 @@ export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebiment
   doc.line(margin, finalY + 1, 80, finalY + 1);
   
   doc.setFont('helvetica', 'normal');
-  doc.text(`Total Amortizado + Juros: ${formatCurrency(totalPagos - totalMultas)}`, margin, finalY + 8);
-  doc.text(`Total Pago em Multas: ${formatCurrency(totalMultas)}`, margin, finalY + 14);
+  doc.text(`${aluguel ? 'Aluguéis pagos' : 'Pago (parcelas/juros/capital)'}: ${formatCurrency(totalPagos - totalMultas)}`, margin, finalY + 8);
+  doc.text(`Pago em multas: ${formatCurrency(totalMultas)}`, margin, finalY + 14);
   doc.setFont('helvetica', 'bold');
   doc.text(`TOTAL GERAL PAGO: ${formatCurrency(totalPagos)}`, margin, finalY + 22);
 
   // Saldo Final com Resumo para Quitação
   const quitacaoInfo = calcularQuitacaoAtualizada(emprestimo);
 
-  if (quitacaoInfo.estaAtrasado) {
+  if (aluguel) {
+    const dev = status === 'pago' ? 0 : devidoAgora(emprestimo).total;
+    doc.setFontSize(13);
+    doc.setTextColor(255, 107, 0);
+    doc.text(`EM ABERTO HOJE: ${formatCurrency(dev)}`, pageWidth - margin, finalY + 22, { align: 'right' });
+  } else if (status === 'pago') {
+    doc.setFontSize(13);
+    doc.setTextColor(18, 161, 80);
+    doc.text('CONTRATO QUITADO', pageWidth - margin, finalY + 22, { align: 'right' });
+  } else if (quitacaoInfo.estaAtrasado) {
     // Desenha caixa estilizada para o "Resumo para Quitação"
     doc.setFillColor(248, 249, 250);
     doc.rect(105, finalY - 5, 91, 62, 'F');
@@ -344,6 +366,9 @@ export const gerarExtratoPagamentos = (emprestimo = {}, cliente = {}, recebiment
   doc.setFont('helvetica', 'normal');
   doc.text(`Extrato oficial gerado em ${new Date().toLocaleString()} - Meu Jurista Online`, pageWidth / 2, 285, { align: 'center' });
 
-  const safeClientName = (cliente?.nome || 'Cliente').replace(/\s+/g, '_');
-  doc.save(`Extrato_${safeClientName}_${new Date().getTime()}.pdf`);
+  const safeClientName = (cliente?.nome || 'Cliente').replace(/\s+/g, '_').replace(/[^\w\-]/g, '');
+  const nome = `Extrato_${safeClientName}_${new Date().toISOString().slice(0, 10)}.pdf`;
+  if (retornar) return { blob: doc.output('blob'), nome };
+  doc.save(nome);
+  return null;
 };
